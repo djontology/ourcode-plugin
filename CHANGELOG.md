@@ -2,6 +2,25 @@
 
 <!-- version list -->
 
+## v1.0.0 (2026-02-23)
+
+### Bug Fixes
+
+- Install uv inside PSR docker container and prevent major bump on 0.x
+  ([`0942a27`](https://github.com/djontology/ourcode-plugin/commit/0942a27a05140f3ef45f110448b79c86d11c51f5))
+
+### Continuous Integration
+
+- Add artifact upload step for publish job
+  ([`24c61dd`](https://github.com/djontology/ourcode-plugin/commit/24c61dd8dd87523b1ea22b9c6bf76593dc2559b4))
+
+- Pivot to python-semantic-release + commitizen
+  ([`a1a9f5a`](https://github.com/djontology/ourcode-plugin/commit/a1a9f5ae05fd09428466e4166555a05028b9ab35))
+
+- Reset version to 0.1.2 after accidental 1.0.0 bump
+  ([`00e0198`](https://github.com/djontology/ourcode-plugin/commit/00e0198cf1a12ccfeaebcd2b0849269eb9240427))
+
+
 ## v0.1.2 (2026-02-23)
 
 ### Bug Fixes
