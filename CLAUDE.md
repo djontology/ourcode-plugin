@@ -1,6 +1,6 @@
 # plugin/
 
-<!-- Freshness: 2026-02-22 -->
+<!-- Freshness: 2026-02-23 -->
 
 ## Purpose
 
@@ -29,10 +29,38 @@ skills/                       # Skill implementations
 - All API calls use the `/api/` prefix (e.g., `/api/auth/sessions`, `/api/projects`).
 - The summary schema is defined in `server/app/schemas/summary.py` -- any changes there must be reflected in the summarize skill output.
 
-## Publishing
+## Publishing & Versioning
 
-- The publish workflow (`.github/workflows/publish.yml`) triggers on `v*` tags and pushes to prod PyPI.
-- When bumping the version, update `pyproject.toml` version AND create a matching git tag (e.g. version `0.1.2` → tag `v0.1.2`). Keep these in sync.
+Releases are fully automated via [python-semantic-release](https://github.com/python-semantic-release/python-semantic-release) (v10). On every push to `main`, it analyzes commits and, if warranted, bumps the version in `pyproject.toml`, creates a git tag, builds with `uv build`, and creates a GitHub release. A separate publish job uploads to TestPyPI via `pypa/gh-action-pypi-publish`.
+
+**Never manually edit the version in `pyproject.toml` or create version tags.** The tool manages both atomically.
+
+Currently publishing to **TestPyPI**. To switch to prod PyPI: remove `repository-url` from the publish step in `release.yml` and change the secret from `TEST_PYPI_TOKEN` to `PYPI_TOKEN`.
+
+**If `uv.lock` is added later**, update `build_command` in `pyproject.toml` to:
+```toml
+build_command = """
+    uv lock --upgrade-package ourcode
+    git add uv.lock
+    uv build
+"""
+```
+This ensures the lockfile is updated and included in the release commit.
+
+### Conventional Commits
+
+Commit messages control what gets released. A [commitizen](https://commitizen-tools.github.io/commitizen/) pre-commit hook (via `pre-commit`) enforces the format locally. Run `pre-commit install --hook-type commit-msg` after cloning.
+
+| Commit prefix | Version bump | Example |
+|---|---|---|
+| `fix:` | Patch (0.0.x) | `fix: handle missing config file` |
+| `feat:` | Minor (0.x.0) | `feat: add match filtering` |
+| `feat!:` or `BREAKING CHANGE:` footer | Major (x.0.0) | `feat!: redesign CLI interface` |
+| `chore:`, `docs:`, `refactor:`, `test:`, `ci:` | No release | `chore: update deps` |
+
+**PR impact:** When squash-merging PRs, the squash commit message is what semantic-release reads. The PR title becomes the squash commit message by default in GitHub — so **PR titles must follow conventional commit format** to trigger the correct release.
+
+Other valid scopes: `fix(auth):`, `feat(cli):`, etc. Scopes are optional but useful for changelogs.
 
 ## Dependencies
 
