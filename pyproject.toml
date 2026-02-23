@@ -19,3 +19,6 @@ ourcode = "cli.main:main"
 [project.urls]
 Homepage = "https://our-code-production.up.railway.app"
 Repository = "https://github.com/djontology/ourcode-plugin"
+
+[tool.uv.build-backend]
+module-name = "cli"
