@@ -1,0 +1,13 @@
+{
+  "name": "ourcode",
+  "version": "0.1.0",
+  "description": "OurCode plugin — find developers working on similar projects. Authenticate with GitHub, generate project summaries, and submit them for matching.",
+  "author": {
+    "name": "OurCode",
+    "url": "https://github.com/djontology/ourcode-plugin"
+  },
+  "homepage": "https://our-code-production.up.railway.app",
+  "repository": "https://github.com/djontology/ourcode-plugin",
+  "license": "MIT",
+  "keywords": ["developer-matching", "collaboration", "project-summary"]
+}
