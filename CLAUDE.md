@@ -12,16 +12,21 @@ Claude Code plugin that provides five skills for interacting with the OurCode AP
 .claude-plugin/plugin.json   # Plugin manifest (name: "ourcode")
 commands/                     # Slash command definitions (ourcode-login, ourcode-submit, ourcode-summarize, ourcode-setup)
 skills/                       # Skill implementations
-  ourcode-login/SKILL.md      # GitHub OAuth login
+  ourcode-login/SKILL.md      # GitHub OAuth login (delegates to `ourcode auth login`)
   ourcode-summarize/SKILL.md  # Analyze codebase and produce ProjectSummaryCreate JSON
   ourcode-submit/SKILL.md     # Submit summary to POST /api/projects, display match comparison
   ourcode-account/SKILL.md    # Account management via ourcode CLI (matches show, /api/ paths)
   ourcode-setup/SKILL.md      # First-run setup: chains login -> summarize -> submit in one flow
+src/cli/                      # Typer CLI (`ourcode` console script)
+  auth.py                     # auth login/status/logout commands
+  client.py                   # httpx API client, config read/write (~/.ourcode/config)
+  main.py                     # CLI entrypoint, registers all subcommands
+  profile.py, projects.py, matches.py, intros.py  # Account management subcommands
 ```
 
 ## Contracts
 
-- **Login skill** calls `POST /api/auth/sessions`, opens `auth_url` in browser, polls `GET /api/auth/sessions/{session_id}` until complete, stores the returned `api_token`.
+- **Login skill** delegates to `ourcode auth login`, which calls `POST /api/auth/sessions`, opens `auth_url` in browser, polls `GET /api/auth/sessions/{session_id}` until complete, stores the returned `api_token` via `save_config()`.
 - **Summarize skill** analyzes the current project and produces a `ProjectSummaryCreate` JSON object matching schema_version "1.0".
 - **Submit skill** sends the summary to `POST /api/projects` with Bearer token auth. Response includes `matches` array with similar projects grouped by tier (exact, partial, related), each containing decrypted summary, similarity score, and `comparison` data (shared/unique goals, tech stack, architecture).
 - **Setup skill** chains login, summarize, and submit into a single first-run flow. Checks for existing token, runs subagent for codebase analysis, displays matches with comparison data, and offers next steps (dashboard, contact info, introductions).
@@ -65,5 +70,6 @@ Other valid scopes: `fix(auth):`, `feat(cli):`, etc. Scopes are optional but use
 ## Dependencies
 
 - Requires the OurCode server API to be running and reachable
-- Account skill requires the `ourcode` CLI to be installed (`uv sync` in server/)
+- The `ourcode` CLI is part of this package (installed via `pip install ourcode` or `uv pip install ourcode`)
 - Skills are markdown-based (SKILL.md) -- no compiled code
+- Server-side contract tests (`server/tests/test_api_contract.py`) verify API response shapes match what the CLI expects

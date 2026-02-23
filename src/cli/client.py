@@ -5,6 +5,13 @@ from pathlib import Path
 import httpx
 
 CONFIG_PATH = Path.home() / ".ourcode" / "config"
+DEFAULT_API_URL = "https://api.ourcode.dev"
+
+
+def save_config(token: str, api_url: str) -> None:
+    """Write token and API URL to ~/.ourcode/config."""
+    CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    CONFIG_PATH.write_text(f"OURCODE_API_TOKEN={token}\nOURCODE_API_URL={api_url}\n")
 
 
 def load_config() -> dict[str, str]:

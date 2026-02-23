@@ -1,10 +1,11 @@
-"""OurCode CLI — account management, matches, and introductions."""
+"""OurCode CLI — authentication, account management, matches, and introductions."""
 
 import typer
 
-from cli import intros, matches, profile, projects
+from cli import auth, intros, matches, profile, projects
 
 app = typer.Typer(help="OurCode CLI for account management")
+app.add_typer(auth.app, name="auth")
 app.add_typer(profile.app, name="profile")
 app.add_typer(projects.app, name="projects")
 app.add_typer(matches.app, name="matches")

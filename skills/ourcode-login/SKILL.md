@@ -1,16 +1,17 @@
 ---
 name: ourcode-login
-description: Use when the developer needs to authenticate with OurCode via GitHub - creates a session, opens browser for GitHub OAuth, polls until complete, and saves API token to ~/.ourcode/config
+description: Use when the developer needs to authenticate with OurCode via GitHub - runs `ourcode auth login` to create a session, open browser for GitHub OAuth, poll until complete, and save API token to ~/.ourcode/config
 ---
 
 # OurCode Login
 
 ## Overview
 
-Authenticate the developer with OurCode via GitHub. Uses a session polling pattern: create a session on the server, open the browser to GitHub OAuth, poll until authentication completes, then save the API token locally.
+Authenticate the developer with OurCode via GitHub. The `ourcode auth login` command handles the entire flow: creating a session on the server, opening the browser to GitHub OAuth, polling until authentication completes, and saving the API token locally.
 
 ## Prerequisites
 
+- The `ourcode` CLI must be installed (`pip install ourcode` or `uv pip install ourcode`)
 - Internet access to reach the OurCode API server
 - A web browser for GitHub OAuth authorization
 
@@ -20,84 +21,33 @@ The API base URL defaults to `https://api.ourcode.dev`. Override by setting the 
 
 ## Steps
 
-### Step 1: Check for existing token
-
-Read `~/.ourcode/config` to check if a token already exists.
+### Step 1: Run the login command
 
 ```bash
-cat ~/.ourcode/config 2>/dev/null
+ourcode auth login
 ```
 
-If a valid token exists, inform the developer:
-"You are already logged in. Run `/ourcode-login` again to re-authenticate with a fresh token."
-
-If the developer explicitly wants to re-authenticate, continue to Step 2.
-
-### Step 2: Determine API base URL
+If the developer is already logged in, the command will report that and exit. To force re-authentication:
 
 ```bash
-echo "${OURCODE_API_URL:-https://api.ourcode.dev}"
+ourcode auth login --force
 ```
 
-Use this as `API_BASE` for all subsequent requests.
+### Step 2: Report result
 
-### Step 3: Create an auth session
+- If exit code 0: "Authentication successful! Your API token has been saved to `~/.ourcode/config`. You can now use `/ourcode-summarize` and `/ourcode-submit`."
+- If exit code 1: Report the error message from the command output.
 
-```bash
-curl -s -X POST "${API_BASE}/api/auth/sessions" -H "Content-Type: application/json"
-```
+## Other auth commands
 
-Expected response:
-```json
-{"session_id": "uuid-here", "auth_url": "https://github.com/login/oauth/authorize?client_id=...&state=uuid-here"}
-```
-
-Extract `session_id` and `auth_url` from the response.
-
-### Step 4: Open browser for GitHub authorization
-
-```bash
-open "${auth_url}"
-```
-
-Tell the developer: "Opening your browser to sign in with GitHub. Please authorize the OurCode app."
-
-### Step 5: Poll for session completion
-
-Poll the session status every 2 seconds for up to 5 minutes (150 attempts):
-
-```bash
-curl -s "${API_BASE}/api/auth/sessions/${session_id}"
-```
-
-- If `status` is `"pending"`: wait 2 seconds and retry
-- If `status` is `"complete"`: extract `api_token` and proceed to Step 6
-- If `status` is `"expired"`: inform the developer the session timed out and suggest re-running `/ourcode-login`
-
-### Step 6: Save the API token
-
-Create the config directory and write the token:
-
-```bash
-mkdir -p ~/.ourcode
-```
-
-Write to `~/.ourcode/config`:
-
-```
-OURCODE_API_TOKEN=<the api_token from step 5>
-OURCODE_API_URL=<the API_BASE used>
-```
-
-### Step 7: Confirm success
-
-Tell the developer: "Authentication successful! Your API token has been saved to `~/.ourcode/config`. You can now use `/ourcode-summarize` and `/ourcode-submit`."
+- **Check status**: `ourcode auth status` — verifies the saved token is valid
+- **Log out**: `ourcode auth logout` — removes `~/.ourcode/config`
 
 ## Error Handling
 
-- If the API server is unreachable: "Cannot reach the OurCode server. Check your internet connection and try again."
-- If GitHub authorization is denied: The session will remain pending until it expires. Inform the developer.
-- If the session expires (10 minutes): "Session timed out. Please run `/ourcode-login` again."
+- If the CLI is not installed: "The `ourcode` CLI is not installed. Install it with `pip install ourcode` or `uv pip install ourcode`."
+- If the API server is unreachable: The CLI will print an error. Report it to the developer.
+- If the session expires: The CLI will print an error. Suggest re-running `/ourcode-login`.
 
 ## Security Notes
 
