@@ -20,8 +20,25 @@ jobs:
           name: dist
           path: dist/
 
-  publish:
+  test:
     needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: astral-sh/setup-uv@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Install from built wheel
+        run: uv tool install dist/*.whl
+
+      - name: Verify entry point
+        run: ourcode --help
+
+  publish:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
