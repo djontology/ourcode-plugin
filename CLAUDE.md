@@ -9,7 +9,7 @@ Claude Code plugin that provides five skills for interacting with the OurCode AP
 ## Structure
 
 ```
-.claude-plugin/plugin.json   # Plugin manifest (name: "ourcode", v0.1.0)
+.claude-plugin/plugin.json   # Plugin manifest (name: "ourcode")
 commands/                     # Slash command definitions (ourcode-login, ourcode-submit, ourcode-summarize, ourcode-setup)
 skills/                       # Skill implementations
   ourcode-login/SKILL.md      # GitHub OAuth login
@@ -28,6 +28,11 @@ skills/                       # Skill implementations
 - **Account skill** delegates to the `ourcode` CLI for profile management, match browsing (including `matches show` with comparison), and introduction handling. CLI reads config from `~/.ourcode/config`.
 - All API calls use the `/api/` prefix (e.g., `/api/auth/sessions`, `/api/projects`).
 - The summary schema is defined in `server/app/schemas/summary.py` -- any changes there must be reflected in the summarize skill output.
+
+## Publishing
+
+- The publish workflow (`.github/workflows/publish.yml`) triggers on `v*` tags and pushes to prod PyPI.
+- When bumping the version, update `pyproject.toml` version AND create a matching git tag (e.g. version `0.1.2` → tag `v0.1.2`). Keep these in sync.
 
 ## Dependencies
 
