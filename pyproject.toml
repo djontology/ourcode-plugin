@@ -27,7 +27,8 @@ module-name = "cli"
 commit_parser = "conventional"
 version_toml = ["pyproject.toml:project.version"]
 tag_format = "v{version}"
-build_command = "uv build"
+major_on_zero = false
+build_command = "pip install uv && uv build"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
