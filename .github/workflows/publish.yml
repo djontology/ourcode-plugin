@@ -1,4 +1,4 @@
-name: Publish to TestPyPI
+name: Publish to PyPI
 
 on:
   push:
@@ -48,6 +48,6 @@ jobs:
 
       - uses: astral-sh/setup-uv@v4
 
-      - run: uv publish --publish-url https://test.pypi.org/legacy/ dist/*
+      - run: uv publish dist/*
         env:
-          UV_PUBLISH_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
