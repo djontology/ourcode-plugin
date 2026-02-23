@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.2.0 (2026-02-23)
+
+### Features
+
+- Add auth CLI commands and test suite with CI
+  ([`3d1a00c`](https://github.com/djontology/ourcode-plugin/commit/3d1a00cb6d2b3ba1925723a51eeabf561eeb2a04))
+
+
 ## v0.1.4 (2026-02-23)
 
 ### Bug Fixes
