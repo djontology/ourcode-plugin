@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.1.4 (2026-02-23)
+
+### Bug Fixes
+
+- Add allow_zero_version to prevent PSR jumping to 1.0.0
+  ([`eb9b70f`](https://github.com/djontology/ourcode-plugin/commit/eb9b70fc2bf913b9d35fabd029439ff1126f7949))
+
+
 ## v1.0.0 (2026-02-23)
 
 ### Bug Fixes
