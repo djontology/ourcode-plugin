@@ -23,6 +23,9 @@ Repository = "https://github.com/djontology/ourcode-plugin"
 [tool.uv.build-backend]
 module-name = "cli"
 
+[dependency-groups]
+dev = ["pytest"]
+
 [tool.semantic_release]
 commit_parser = "conventional"
 version_toml = ["pyproject.toml:project.version"]
