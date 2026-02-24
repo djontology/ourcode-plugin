@@ -2,6 +2,22 @@
 
 <!-- version list -->
 
+## v0.3.0 (2026-02-24)
+
+### Documentation
+
+- Add CLI install verification to setup, replace curl with CLI calls
+  ([`92a8bc5`](https://github.com/djontology/ourcode-plugin/commit/92a8bc5bca2e0fe831e6b56d25d5714042726ed9))
+
+- Refresh skill language for accuracy and consistency
+  ([`4b992a9`](https://github.com/djontology/ourcode-plugin/commit/4b992a93433f483f86538439106e51c3e745ecc3))
+
+### Features
+
+- Update plugin summarizer to schema v2 with product-focused fields
+  ([`a43a873`](https://github.com/djontology/ourcode-plugin/commit/a43a873346e091f49926cf63488ec6c5f939ef2b))
+
+
 ## v0.2.0 (2026-02-23)
 
 ### Features
