@@ -44,18 +44,17 @@ Options:
 
 ### Step 4: Submit to the server
 
-Read token and API URL from `~/.ourcode/config`. Default API URL: `https://our-code-production.up.railway.app`
-
-There is no CLI command for project submission yet, so submit directly via the API:
+Use the CLI to submit the summary:
 
 ```bash
-curl -s -X POST "${OURCODE_API_URL}/api/projects?register=true" \
-  -H "Authorization: Bearer ${OURCODE_API_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d @.ourcode/summary.json
+ourcode projects submit .ourcode/summary.json --register
 ```
 
-(Use `register=false` for ephemeral.)
+For ephemeral (24-hour) submission:
+
+```bash
+ourcode projects submit .ourcode/summary.json --no-register
+```
 
 ### Step 5: Show the result
 

@@ -101,6 +101,78 @@ def test_projects_list_empty(_patch_get_client):
     assert "No projects" in result.output
 
 
+def test_projects_submit_with_matches(_patch_get_client, tmp_path):
+    client = _patch_get_client
+    _set_response(client, {
+        "id": "proj-new-123",
+        "lifecycle_stage": "mvp",
+        "is_registered": True,
+        "expires_at": None,
+        "created_at": "2025-02-01T00:00:00Z",
+        "matches": [
+            {
+                "project_id": "match-proj-1",
+                "tier": "exact",
+                "similarity": 0.94,
+                "lifecycle_stage": "mvp",
+                "summary": {
+                    "project": {"goals": ["Build a matching service"]},
+                    "tech_stack": {"languages": ["Python"], "frameworks": ["FastAPI"]},
+                },
+            },
+            {
+                "project_id": "match-proj-2",
+                "tier": "partial",
+                "similarity": 0.81,
+                "lifecycle_stage": "prototype",
+                "summary": {
+                    "project": {"goals": ["Create discovery platform"]},
+                    "tech_stack": {"languages": ["TypeScript"], "frameworks": ["Next.js"]},
+                },
+            },
+        ],
+    })
+
+    summary_file = tmp_path / "summary.json"
+    summary_file.write_text('{"schema_version": "2.0", "project": {}, "tech_stack": {}}')
+
+    with patch("cli.projects.get_client", return_value=client):
+        result = runner.invoke(projects_app, ["submit", str(summary_file)])
+
+    assert result.exit_code == 0
+    assert "proj-new-123" in result.output
+    assert "Registered" in result.output
+    assert "Exact matches" in result.output
+    assert "94%" in result.output
+    assert "Build a matching service" in result.output
+    assert "Partial matches" in result.output
+    assert "81%" in result.output
+    assert "Create discovery platform" in result.output
+
+
+def test_projects_submit_no_matches(_patch_get_client, tmp_path):
+    client = _patch_get_client
+    _set_response(client, {
+        "id": "proj-new-456",
+        "lifecycle_stage": "prototype",
+        "is_registered": False,
+        "expires_at": "2025-02-02T00:00:00Z",
+        "created_at": "2025-02-01T00:00:00Z",
+        "matches": [],
+    })
+
+    summary_file = tmp_path / "summary.json"
+    summary_file.write_text('{"schema_version": "2.0", "project": {}, "tech_stack": {}}')
+
+    with patch("cli.projects.get_client", return_value=client):
+        result = runner.invoke(projects_app, ["submit", str(summary_file), "--no-register"])
+
+    assert result.exit_code == 0
+    assert "proj-new-456" in result.output
+    assert "Ephemeral" in result.output
+    assert "No similar projects" in result.output
+
+
 # -- matches -------------------------------------------------------------------
 
 

@@ -15,10 +15,13 @@ The summary must conform to this schema:
 
 ```json
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "project": {
     "goals": ["string — freeform goal description"],
+    "non_goals": ["string — what this project explicitly does NOT do"],
+    "user_stories": ["As a [persona], I [action/need]"],
     "domain_tags": ["string — categorization keyword"],
+    "ux_patterns": ["string — e.g. crud-dashboard, cli-tool, visual-canvas"],
     "architecture": "monolith | microservices | cli-tool | library | web-app | mobile-app | api-service",
     "lifecycle_stage": "brainstorm | prototype | mvp | ga"
   },
@@ -33,59 +36,42 @@ The summary must conform to this schema:
 
 ## Steps
 
-### Step 1: Analyze the project
+### Step 1: Analyze and draft the summary
 
-Read these files (if they exist) to understand the project:
+Dispatch the `ourcode:codebase-summarizer` agent via the Task tool to analyze the codebase and produce a `ProjectSummaryCreate` JSON summary. The agent reads README, package manifests, directory structure, and infrastructure files, then returns the JSON object.
 
-1. **README.md** or similar documentation — extract project goals and description
-2. **Package manifests** — detect languages, frameworks, and libraries:
-   - `package.json` (Node.js/JavaScript/TypeScript)
-   - `pyproject.toml` or `requirements.txt` (Python)
-   - `Cargo.toml` (Rust)
-   - `go.mod` (Go)
-   - `Gemfile` (Ruby)
-   - `pom.xml` or `build.gradle` (Java)
-   - `*.csproj` (C#/.NET)
-3. **Directory structure** — infer architecture pattern:
-   - `src/` with subdirectories → likely monolith or web-app
-   - `packages/` or `services/` → likely microservices
-   - `lib/` → likely library
-   - `cmd/` → likely cli-tool
-   - `ios/` or `android/` → likely mobile-app
-4. **Infrastructure files** — detect infrastructure:
-   - `Dockerfile`, `docker-compose.yml` → Docker
-   - `railway.toml`, `railway.json` → Railway
-   - `vercel.json` → Vercel
-   - `terraform/`, `*.tf` → Terraform
-   - `.github/workflows/` → GitHub Actions
-   - `Procfile` → Heroku
+If the agent cannot determine enough information (no README, no package manifests), ask the developer to describe their project goals, tech stack, domain tags, lifecycle stage, and architecture style. Construct the JSON from their answers.
 
-### Step 2: Draft the summary
-
-Based on the analysis, draft a JSON summary. Use your best judgment for:
-
-- **goals**: 1-3 concise descriptions of what the project aims to achieve
-- **domain_tags**: 2-5 keywords for categorization (e.g., "e-commerce", "developer-tools", "data-pipeline")
-- **architecture**: Choose the closest match from the allowed values
-- **lifecycle_stage**: Assess based on README, test coverage, CI/CD presence:
-  - `brainstorm` — mostly docs, no working code
-  - `prototype` — working code, minimal tests, no CI
-  - `mvp` — tests exist, CI exists, core features work
-  - `ga` — production-ready, comprehensive tests, monitoring
-
-### Step 3: Present to developer for review
+### Step 2: Present to developer for review
 
 Output the drafted summary as formatted JSON and ask the developer to review it:
 
 "Here's the project summary I've drafted. Please review and let me know if you'd like to adjust anything:"
 
-```json
-{ ... drafted summary ... }
+Display the summary in a readable format:
+
 ```
+Project Summary:
+  Goals: [list]
+  User Stories: [list]
+  Non-Goals: [list, or "None"]
+  Domain: [tags]
+  UX Patterns: [list]
+  Architecture: [style]
+  Stage: [lifecycle_stage]
+
+Tech Stack:
+  Languages: [list]
+  Frameworks: [list]
+  Libraries: [list]
+  Infrastructure: [list]
+```
+
+Also show the full JSON for reference.
 
 Ask: "Does this look accurate? Would you like to change anything before saving?"
 
-### Step 4: Save the summary
+### Step 3: Save the summary
 
 Once the developer approves, write the summary to `.ourcode/summary.json` in the project root:
 

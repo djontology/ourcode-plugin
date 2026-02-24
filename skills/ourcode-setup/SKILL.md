@@ -79,39 +79,7 @@ If login fails, report the error and offer to retry.
 
 ## Step 3: Analyze Codebase
 
-Use a subagent to analyze the current project and produce a `ProjectSummaryCreate` JSON payload.
-
-### Subagent Instructions
-
-Dispatch a subagent with these instructions:
-
-> Analyze this codebase and produce a JSON object matching the ProjectSummaryCreate schema:
->
-> ```json
-> {
->   "schema_version": "1.0",
->   "project": {
->     "goals": ["list of 2-5 project goals"],
->     "domain_tags": ["relevant domain tags"],
->     "architecture": "one of: monolith, microservices, cli-tool, library, web-app, mobile-app, api-service",
->     "lifecycle_stage": "one of: brainstorm, prototype, mvp, ga"
->   },
->   "tech_stack": {
->     "languages": ["programming languages used"],
->     "frameworks": ["frameworks used"],
->     "key_libraries": ["important libraries"],
->     "infrastructure": ["infrastructure tools"]
->   }
-> }
-> ```
->
-> Read these files to determine the summary:
-> - README.md (or README) for project goals and description
-> - package.json, pyproject.toml, Cargo.toml, go.mod, or other package manifests for tech stack
-> - Dockerfile, docker-compose.yml for infrastructure
-> - Directory structure for architecture style
->
-> Return ONLY the JSON object, no explanation.
+Dispatch the `ourcode:codebase-summarizer` agent via the Task tool to analyze the current project and produce a `ProjectSummaryCreate` JSON payload.
 
 ### Fallback: Manual Input
 
@@ -132,7 +100,10 @@ Show the generated summary to the user in a readable format:
 ```
 Project Summary:
   Goals: [list]
+  User Stories: [list]
+  Non-Goals: [list, or "None"]
   Domain: [tags]
+  UX Patterns: [list]
   Architecture: [style]
   Stage: [lifecycle_stage]
 
@@ -149,18 +120,13 @@ If the user wants changes, update the JSON accordingly.
 
 ## Step 5: Submit Project
 
-Read token and API URL from `~/.ourcode/config`. Default API URL: `https://our-code-production.up.railway.app`
-
-There is no CLI command for project submission yet, so submit directly via the API:
+Save the summary JSON to `.ourcode/summary.json`, then submit via the CLI:
 
 ```bash
-curl -s -X POST "${API_BASE}/api/projects?register=true" \
-  -H "Authorization: Bearer ${TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '${SUMMARY_JSON}'
+ourcode projects submit .ourcode/summary.json --register
 ```
 
-If the response includes an error, show it and offer to fix the summary.
+If the command fails, show the error and offer to fix the summary.
 
 ## Step 6: Display Matches
 

@@ -1,6 +1,6 @@
 # plugin/
 
-<!-- Freshness: 2026-02-23 -->
+<!-- Freshness: 2026-02-24 -->
 
 ## Purpose
 
@@ -27,7 +27,7 @@ src/cli/                      # Typer CLI (`ourcode` console script)
 ## Contracts
 
 - **Login skill** delegates to `ourcode auth login`, which calls `POST /api/auth/sessions`, opens `auth_url` in browser, polls `GET /api/auth/sessions/{session_id}` until complete, stores the returned `api_token` via `save_config()`.
-- **Summarize skill** analyzes the current project and produces a `ProjectSummaryCreate` JSON object matching schema_version "1.0".
+- **Summarize skill** analyzes the current project and produces a `ProjectSummaryCreate` JSON object matching schema_version "2.0".
 - **Submit skill** sends the summary to `POST /api/projects` with Bearer token auth. Response includes `matches` array with similar projects grouped by tier (exact, partial, related), each containing decrypted summary, similarity score, and `comparison` data (shared/unique goals, tech stack, architecture).
 - **Setup skill** chains login, summarize, and submit into a single first-run flow. Checks for existing token, runs subagent for codebase analysis, displays matches with comparison data, and offers next steps (dashboard, contact info, introductions).
 - **Account skill** delegates to the `ourcode` CLI for profile management, match browsing (including `matches show` with comparison), and introduction handling. CLI reads config from `~/.ourcode/config`.
