@@ -52,7 +52,7 @@ ourcode auth login --force
 
 - If the CLI is not installed: suggest installing with `pipx install git+https://github.com/djontology/ourcode-plugin.git` or `uv tool install git+https://github.com/djontology/ourcode-plugin.git`.
 - If the API server is unreachable: The CLI will print an error. Report it to the developer.
-- If the session expires: The CLI will print an error. Suggest re-running `/ourcode-login`.
+- If the session expires: The CLI will print an error. Suggest running `ourcode auth login --force`.
 
 ## Security Notes
 

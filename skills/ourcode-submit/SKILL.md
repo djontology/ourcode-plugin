@@ -16,13 +16,13 @@ Submit the project summary to the OurCode server for matching. Reads the API tok
 
 ## Steps
 
-### Step 1: Read API token
+### Step 1: Verify authentication
 
-Read `~/.ourcode/config` and extract `OURCODE_API_TOKEN` and `OURCODE_API_URL`.
+```bash
+ourcode auth status
+```
 
-Default API URL if not set: `https://our-code-production.up.railway.app`
-
-If the file doesn't exist or has no token: "You need to authenticate first. Run `/ourcode-login`."
+If exit code 1: "You need to authenticate first. Run `/ourcode-login`."
 
 ### Step 2: Read the project summary
 
@@ -44,7 +44,9 @@ Options:
 
 ### Step 4: Submit to the server
 
-Based on the developer's choice, submit with the appropriate `register` parameter:
+Read token and API URL from `~/.ourcode/config`. Default API URL: `https://our-code-production.up.railway.app`
+
+There is no CLI command for project submission yet, so submit directly via the API:
 
 ```bash
 curl -s -X POST "${OURCODE_API_URL}/api/projects?register=true" \
@@ -115,7 +117,7 @@ No similar projects found yet. As more developers submit projects, matches will 
 
 ### Step 6: Handle errors
 
-- **401 Unauthorized**: "Your API token is invalid or expired. Run `/ourcode-login` to re-authenticate."
+- **401 Unauthorized**: "Your API token is invalid or expired. Run `ourcode auth login --force` to re-authenticate."
 - **422 Validation Error**: "Your summary doesn't match the expected schema. Run `/ourcode-summarize` to regenerate it."
 - **500 Server Error**: "The OurCode server encountered an error. Please try again later."
 - **Network error**: "Cannot reach the OurCode server. Check your internet connection."
