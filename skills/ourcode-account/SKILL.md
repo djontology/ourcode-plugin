@@ -12,7 +12,12 @@ Manage your OurCode account using the `ourcode` CLI. View your profile, set cont
 ## Prerequisites
 
 - Must be authenticated (run `/ourcode-login` first)
-- The `ourcode` CLI must be installed (it's part of the server package)
+- The `ourcode` CLI must be installed. Install with:
+  ```bash
+  pipx install git+https://github.com/djontology/ourcode-plugin.git
+  # or
+  uv tool install git+https://github.com/djontology/ourcode-plugin.git
+  ```
 
 ## Available Commands
 
@@ -67,27 +72,27 @@ ourcode intros decline <introduction-id>
 
 ## Workflow Guide
 
-### First time setup
+### First time after submitting a project
 
 1. Run `ourcode profile show` to check your profile
-2. Run `ourcode profile set-contact "<your contact info>"` — this is required before you can request or accept introductions
+2. Run `ourcode profile set-contact "<your contact info>"` — required before you can request or accept introductions
 
 ### Viewing and acting on matches
 
 1. Run `ourcode projects list` to see your projects
 2. Run `ourcode matches list <project-id>` to see matches for a project
-3. Run `ourcode matches show <match-id> --project <project-id>` to see a detailed comparison of your project vs. a match
-4. If interested in a match, run `ourcode matches connect <match-id> <your-project-id>`
+3. Run `ourcode matches show <match-id> --project <project-id>` to see a detailed comparison
+4. If interested, run `ourcode matches connect <match-id> <your-project-id>`
    - If the target project has auto-approve: you'll see their contact info immediately
    - If manual: the request is pending until they accept
-
-**Alternative:** Use the [web dashboard](https://our-code-production.up.railway.app) to browse matches, compare projects, and manage introductions with a graphical interface.
 
 ### Responding to introduction requests
 
 1. Run `ourcode intros list` to see incoming requests
 2. Run `ourcode intros accept <id>` to accept (reveals both parties' contact info)
 3. Run `ourcode intros decline <id>` to decline
+
+**Web alternative:** You can also do all of this from the [dashboard](https://our-code-production.up.railway.app) — browse matches, compare projects, and manage introductions with a visual interface.
 
 ## Error Handling
 
