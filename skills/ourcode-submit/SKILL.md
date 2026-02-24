@@ -18,19 +18,15 @@ Submit the project summary to the OurCode server for matching. Reads the API tok
 
 ### Step 1: Read API token
 
-```bash
-cat ~/.ourcode/config
-```
+Read `~/.ourcode/config` and extract `OURCODE_API_TOKEN` and `OURCODE_API_URL`.
 
-Extract `OURCODE_API_TOKEN` and `OURCODE_API_URL` from the config file.
+Default API URL if not set: `https://our-code-production.up.railway.app`
 
 If the file doesn't exist or has no token: "You need to authenticate first. Run `/ourcode-login`."
 
 ### Step 2: Read the project summary
 
-```bash
-cat .ourcode/summary.json
-```
+Read `.ourcode/summary.json` from the project root.
 
 If the file doesn't exist: "No project summary found. Run `/ourcode-summarize` first."
 
@@ -43,14 +39,13 @@ Ask the developer:
 "Would you like to register this project permanently, or submit it as an ephemeral search (auto-deleted after 24 hours)?"
 
 Options:
-- **Register permanently** — project stays on your account
+- **Register permanently** — project stays on your account, matches are saved
 - **Ephemeral search** — submit for matching, auto-expires in 24 hours. You can register it later if you find good matches.
 
 ### Step 4: Submit to the server
 
 Based on the developer's choice, submit with the appropriate `register` parameter:
 
-For permanent registration:
 ```bash
 curl -s -X POST "${OURCODE_API_URL}/api/projects?register=true" \
   -H "Authorization: Bearer ${OURCODE_API_TOKEN}" \
@@ -58,13 +53,7 @@ curl -s -X POST "${OURCODE_API_URL}/api/projects?register=true" \
   -d @.ourcode/summary.json
 ```
 
-For ephemeral search:
-```bash
-curl -s -X POST "${OURCODE_API_URL}/api/projects?register=false" \
-  -H "Authorization: Bearer ${OURCODE_API_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d @.ourcode/summary.json
-```
+(Use `register=false` for ephemeral.)
 
 ### Step 5: Show the result
 
@@ -85,17 +74,17 @@ Then check the `matches` array in the response.
 Found **3 similar projects**:
 
 **Exact matches** (very similar goals and tech):
-  - Project `xyz789...` (mvp) — similarity: 0.94
+  - 94% similar (mvp)
     Goals: Build a developer matching service
     Tech: Python, FastAPI, pgvector
 
 **Partial matches** (overlapping goals, different approach):
-  - Project `def012...` (prototype) — similarity: 0.82
+  - 82% similar (prototype)
     Goals: Create a developer discovery platform
     Tech: TypeScript, Next.js, Pinecone
 
 **Related projects** (same domain, adjacent goals):
-  - Project `ghi345...` (ga) — similarity: 0.68
+  - 68% similar (ga)
     Goals: Open source contributor matching
     Tech: Go, PostgreSQL"
 
@@ -105,7 +94,7 @@ For each matched project, extract from `matches[].summary`:
 
 ### Displaying Match Comparison Data
 
-For each match that includes a `comparison` field in the response, display the structured comparison data:
+For each match that includes a `comparison` field in the response, display the structured comparison:
 
 ```
 **Shared goals:** [list shared_goals]
@@ -115,8 +104,6 @@ For each match that includes a `comparison` field in the response, display the s
 **Architecture:** [your_architecture] vs [their_architecture] (match: yes/no)
 **Lifecycle:** [your_lifecycle_stage] vs [their_lifecycle_stage]
 ```
-
-Include this comparison data in each match entry when available, helping the developer see exactly what's similar and different between projects.
 
 **If no matches**, display:
 
@@ -135,14 +122,13 @@ No similar projects found yet. As more developers submit projects, matches will 
 
 ### Step 7: Offer next steps
 
-If matches were found, mention:
+After displaying results, mention:
 
-"Your matches have been saved. You can revisit them anytime with:
-```bash
-ourcode matches list <project-id>
-```
+"Your matches have been saved. You can revisit them anytime:
+- **Web dashboard**: https://our-code-production.up.railway.app
+- **CLI**: `ourcode matches list <project-id>`
 
-Want to connect with a match? First set your contact info if you haven't already:
+Want to connect with a match? First set your contact info:
 ```bash
 ourcode profile set-contact 'email: you@example.com'
 ```
@@ -152,4 +138,4 @@ Then request an introduction:
 ourcode matches connect <match-id> <your-project-id>
 ```
 
-Run `/ourcode-account` for full account management options."
+Run `/ourcode-account` for full account management."

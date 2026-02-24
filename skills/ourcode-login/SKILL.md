@@ -11,13 +11,18 @@ Authenticate the developer with OurCode via GitHub. The `ourcode auth login` com
 
 ## Prerequisites
 
-- The `ourcode` CLI must be installed (`pip install ourcode` or `uv pip install ourcode`)
-- Internet access to reach the OurCode API server
+- The `ourcode` CLI must be installed. Install with:
+  ```bash
+  pipx install git+https://github.com/djontology/ourcode-plugin.git
+  # or
+  uv tool install git+https://github.com/djontology/ourcode-plugin.git
+  ```
+- Internet access to reach the OurCode server
 - A web browser for GitHub OAuth authorization
 
 ## Configuration
 
-The API base URL defaults to `https://api.ourcode.dev`. Override by setting the `OURCODE_API_URL` environment variable.
+The API base URL defaults to `https://our-code-production.up.railway.app`. Override by setting `OURCODE_API_URL` in the environment or in `~/.ourcode/config`.
 
 ## Steps
 
@@ -35,7 +40,7 @@ ourcode auth login --force
 
 ### Step 2: Report result
 
-- If exit code 0: "Authentication successful! Your API token has been saved to `~/.ourcode/config`. You can now use `/ourcode-summarize` and `/ourcode-submit`."
+- If exit code 0: "Authentication successful! Your API token has been saved to `~/.ourcode/config`. You can now use `/ourcode-summarize` and `/ourcode-submit`, or run `/ourcode-setup` to do everything in one go."
 - If exit code 1: Report the error message from the command output.
 
 ## Other auth commands
@@ -45,7 +50,7 @@ ourcode auth login --force
 
 ## Error Handling
 
-- If the CLI is not installed: "The `ourcode` CLI is not installed. Install it with `pip install ourcode` or `uv pip install ourcode`."
+- If the CLI is not installed: suggest installing with `pipx install git+https://github.com/djontology/ourcode-plugin.git` or `uv tool install git+https://github.com/djontology/ourcode-plugin.git`.
 - If the API server is unreachable: The CLI will print an error. Report it to the developer.
 - If the session expires: The CLI will print an error. Suggest re-running `/ourcode-login`.
 

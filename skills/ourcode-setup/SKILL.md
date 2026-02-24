@@ -144,7 +144,7 @@ If the match includes a `comparison` field, show:
 
 After displaying matches, offer:
 
-1. **View dashboard:** "Visit https://our-code-production.up.railway.app to see your matches in a web dashboard"
+1. **Web dashboard:** "Visit https://our-code-production.up.railway.app to browse matches, compare projects, and manage introductions"
 2. **Set contact info:** "Run `ourcode profile set-contact <your-email>` to enable introductions"
 3. **Request introduction:** "Run `ourcode matches connect <match-id> <project-id>` to connect with a match"
 4. **Account management:** "Run `/ourcode-account` for full account management"

@@ -95,11 +95,11 @@ mkdir -p .ourcode
 
 Write the approved JSON to `.ourcode/summary.json`.
 
-Tell the developer: "Summary saved to `.ourcode/summary.json`. Run `/ourcode-submit` to submit it to OurCode for matching."
+Tell the developer: "Summary saved to `.ourcode/summary.json`. Run `/ourcode-submit` to submit it for matching."
 
 ## Important Notes
 
-- This Skill works entirely offline. No network requests are made.
+- This skill works entirely offline. No network requests are made.
 - No source code content is included in the summary.
 - The developer always reviews and approves the summary before it's saved.
 - If the project has insufficient information to generate a summary, ask the developer to describe their project goals directly.
