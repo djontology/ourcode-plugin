@@ -294,6 +294,62 @@ def test_projects_submit_with_matches(_patch_get_client, tmp_path):
     assert "Create discovery platform" in result.output
 
 
+def test_projects_submit_with_scraped_matches(_patch_get_client, tmp_path):
+    """Test that submit command displays listing type badges and repo URLs for scraped matches."""
+    client = _patch_get_client
+    _set_response(client, {
+        "id": "proj-new-789",
+        "lifecycle_stage": "mvp",
+        "is_registered": True,
+        "expires_at": None,
+        "created_at": "2025-02-01T00:00:00Z",
+        "matches": [
+            {
+                "project_id": "match-proj-1",
+                "tier": "exact",
+                "similarity": 0.94,
+                "lifecycle_stage": "mvp",
+                "listing_type": "scraped",
+                "display_name": "Open Source API Framework",
+                "repo_url": "https://github.com/example/api-framework",
+                "summary": {
+                    "project": {"goals": ["Build a matching service"]},
+                    "tech_stack": {"languages": ["Python"], "frameworks": ["FastAPI"]},
+                },
+            },
+            {
+                "project_id": "match-proj-2",
+                "tier": "partial",
+                "similarity": 0.81,
+                "lifecycle_stage": "prototype",
+                "listing_type": "private",
+                "display_name": None,
+                "repo_url": None,
+                "summary": {
+                    "project": {"goals": ["Create discovery platform"]},
+                    "tech_stack": {"languages": ["TypeScript"], "frameworks": ["Next.js"]},
+                },
+            },
+        ],
+    })
+
+    summary_file = tmp_path / "summary.json"
+    summary_file.write_text('{"schema_version": "2.0", "project": {}, "tech_stack": {}}')
+
+    with patch("cli.projects.get_client", return_value=client):
+        result = runner.invoke(projects_app, ["submit", str(summary_file)])
+
+    assert result.exit_code == 0
+    assert "proj-new-789" in result.output
+    assert "Exact matches" in result.output
+    assert "[SCRAPED]" in result.output
+    assert "Open Source API Framework" in result.output
+    assert "https://github.com/example/api-framework" in result.output
+    assert "Build a matching service" in result.output
+    assert "Partial matches" in result.output
+    assert "Create discovery platform" in result.output
+
+
 def test_projects_submit_no_matches(_patch_get_client, tmp_path):
     client = _patch_get_client
     _set_response(client, {

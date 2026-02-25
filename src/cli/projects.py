@@ -84,6 +84,18 @@ def submit(
             )
             tech = ", ".join(tech_parts)
             typer.echo(f"    - {pct}% similar ({stage})")
+            lt = m.get("listing_type")
+            name = m.get("display_name")
+            if lt and lt != "private":
+                label = f"[{lt.upper()}]"
+                if name:
+                    label += f" {name}"
+                typer.echo(f"      {label}")
+            elif name:
+                typer.echo(f"      {name}")
+            repo_url = m.get("repo_url")
+            if repo_url:
+                typer.echo(f"      Repo: {repo_url}")
             if goals:
                 typer.echo(f"      Goals: {goals}")
             if tech:
