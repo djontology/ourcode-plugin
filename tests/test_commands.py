@@ -55,6 +55,21 @@ def test_profile_show(_patch_get_client):
     assert "Contact methods: 1" in result.output
 
 
+def test_profile_show_omits_contact_method_count_when_zero(_patch_get_client):
+    """Test that contact_method_count of 0 omits the 'Contact methods:' line from output."""
+    client = _patch_get_client
+    _set_response(client, {"has_contact_info": False, "project_count": 0, "contact_method_count": 0})
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["show"])
+
+    assert result.exit_code == 0
+    assert "Contact info set: False" in result.output
+    assert "Projects: 0" in result.output
+    # Ensure "Contact methods:" does NOT appear in output when count is 0
+    assert "Contact methods:" not in result.output
+
+
 def test_profile_set_contact_single_method(_patch_get_client):
     client = _patch_get_client
     _set_response(client, {
@@ -566,6 +581,81 @@ def test_matches_show_not_found(_patch_get_client):
 
     assert result.exit_code == 1
     assert "not found" in result.output.lower()
+
+
+def test_match_show_private_no_repo_metadata(_patch_get_client):
+    """Test that private match with null repo_url and repo_metadata omits repository section."""
+    client = _patch_get_client
+    _set_response(client, {
+        "matches": [
+            {
+                "match_id": "m-private",
+                "tier": "related",
+                "similarity": 0.70,
+                "listing_type": "private",
+                "other_project": {
+                    "lifecycle_stage": "prototype",
+                    "display_name": None,
+                    "repo_url": None,
+                    "repo_metadata": None,
+                },
+                "comparison": {
+                    "your_architecture": "monolith",
+                    "their_architecture": "monolith",
+                    "architecture_match": True,
+                    "your_lifecycle_stage": "active",
+                    "their_lifecycle_stage": "prototype",
+                    "shared_goals": [],
+                    "unique_to_yours": [],
+                    "unique_to_theirs": [],
+                    "shared_languages": [],
+                    "unique_languages_yours": [],
+                    "unique_languages_theirs": [],
+                    "shared_frameworks": [],
+                    "unique_frameworks_yours": [],
+                    "unique_frameworks_theirs": [],
+                    "shared_libraries": [],
+                    "unique_libraries_yours": [],
+                    "unique_libraries_theirs": [],
+                },
+            }
+        ]
+    })
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["show", "m-private", "--project", "proj-1"])
+
+    assert result.exit_code == 0
+    # Ensure repo metadata sections do NOT appear
+    assert "Repository:" not in result.output
+    assert "stars" not in result.output
+    assert "license" not in result.output
+    assert "contributors" not in result.output
+
+
+def test_match_list_no_filter_no_query_param(_patch_get_client):
+    """Test that matches list without --type filter calls client.get with no query string."""
+    client = _patch_get_client
+    _set_response(client, {
+        "matches": [
+            {
+                "match_id": "m-1",
+                "tier": "exact",
+                "similarity": 0.95,
+                "introduction_status": "pending",
+                "listing_type": "public",
+                "other_project": {"display_name": "Project Alpha"},
+            }
+        ]
+    })
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["list", "proj-1"])
+
+    assert result.exit_code == 0
+    assert "m-1" in result.output
+    # Verify client.get was called with the URL without query params
+    client.get.assert_called_once_with("/projects/proj-1/matches")
 
 
 # -- intros --------------------------------------------------------------------
