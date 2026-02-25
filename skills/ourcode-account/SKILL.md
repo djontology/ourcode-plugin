@@ -88,7 +88,7 @@ ourcode intros decline <introduction-id>
 ### First time after submitting a project
 
 1. Run `ourcode profile show` to check your profile
-2. Run `ourcode profile set-contact "<your contact info>"` — required before you can request or accept introductions
+2. Run `ourcode profile set-contact -m email:you@example.com -p email` — required before you can request or accept introductions
 
 ### Viewing and acting on matches
 
