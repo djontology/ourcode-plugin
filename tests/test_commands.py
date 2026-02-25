@@ -553,6 +553,56 @@ def test_intros_accept(_patch_get_client):
     assert "alice@example.com" in result.output
 
 
+def test_intros_accept_with_structured_contact_info(_patch_get_client):
+    """Test that accept command renders structured contact info with methods array."""
+    client = _patch_get_client
+    _set_response(client, {
+        "id": "i-1",
+        "status": "accepted",
+        "requester_contact_info": {
+            "methods": [
+                {"type": "email", "value": "alice@example.com", "preferred": True}
+            ],
+            "timezone": "America/New_York"
+        },
+        "target_contact_info": {
+            "methods": [
+                {"type": "email", "value": "bob@example.com", "preferred": True}
+            ],
+            "timezone": "Europe/London"
+        },
+    })
+
+    with patch("cli.intros.get_client", return_value=client):
+        result = runner.invoke(intros_app, ["accept", "i-1"])
+
+    assert result.exit_code == 0
+    assert "accepted" in result.output.lower()
+    assert "alice@example.com" in result.output
+    assert "bob@example.com" in result.output
+    assert "(preferred)" in result.output
+    assert "America/New_York" in result.output
+    assert "Europe/London" in result.output
+
+
+def test_intros_accept_with_legacy_contact_info(_patch_get_client):
+    """Test backward compatibility with plain-text contact info."""
+    client = _patch_get_client
+    _set_response(client, {
+        "id": "i-1",
+        "status": "accepted",
+        "requester_contact_info": "alice@example.com",
+        "target_contact_info": "bob@example.com",
+    })
+
+    with patch("cli.intros.get_client", return_value=client):
+        result = runner.invoke(intros_app, ["accept", "i-1"])
+
+    assert result.exit_code == 0
+    assert "accepted" in result.output.lower()
+    assert "alice@example.com" in result.output
+
+
 def test_intros_decline(_patch_get_client):
     client = _patch_get_client
     _set_response(client, {"id": "i-1", "status": "declined"})
@@ -562,3 +612,31 @@ def test_intros_decline(_patch_get_client):
 
     assert result.exit_code == 0
     assert "declined" in result.output.lower()
+
+
+def test_matches_connect_with_auto_approve(_patch_get_client):
+    """Test that connect command with auto-approve response renders structured contact info."""
+    client = _patch_get_client
+    _set_response(client, {
+        "id": "i-2",
+        "status": "accepted",
+        "target_contact_info": {
+            "methods": [
+                {"type": "email", "value": "target@example.com", "preferred": True},
+                {"type": "discord", "value": "targetuser#5678", "preferred": False}
+            ],
+            "timezone": "US/Pacific",
+            "notes": "Available weekdays"
+        },
+    })
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["connect", "m-1", "proj-1"])
+
+    assert result.exit_code == 0
+    assert "accepted" in result.output
+    assert "target@example.com" in result.output
+    assert "targetuser#5678" in result.output
+    assert "(preferred)" in result.output
+    assert "US/Pacific" in result.output
+    assert "Available weekdays" in result.output

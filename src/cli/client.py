@@ -92,3 +92,22 @@ def get_client() -> APIClient:
     except ValueError as e:
         typer.echo(str(e), err=True)
         raise typer.Exit(code=1)
+
+
+def format_contact_info(info):
+    """Format structured or plain-text contact info for display.
+
+    Handles both the new structured format (dict with methods array)
+    and the legacy plain string format for backwards compatibility.
+    """
+    if isinstance(info, str):
+        return info
+    lines = []
+    for m in info.get("methods", []):
+        pref = " (preferred)" if m.get("preferred") else ""
+        lines.append(f"    {m['type']}: {m['value']}{pref}")
+    if info.get("timezone"):
+        lines.append(f"    Timezone: {info['timezone']}")
+    if info.get("notes"):
+        lines.append(f"    Notes: {info['notes']}")
+    return "\n".join(lines)

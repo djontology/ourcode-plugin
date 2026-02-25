@@ -2,7 +2,7 @@
 
 import typer
 
-from cli.client import get_client
+from cli.client import get_client, format_contact_info
 
 app = typer.Typer(help="View and act on matches")
 
@@ -128,4 +128,4 @@ def connect(match_id: str = typer.Argument(..., help="Match UUID to request intr
     data = response.json()
     typer.echo(f"Introduction {data['status']}: {data['id']}")
     if data.get("target_contact_info"):
-        typer.echo(f"Target contact info: {data['target_contact_info']}")
+        typer.echo(f"Target contact info:\n{format_contact_info(data['target_contact_info'])}")
