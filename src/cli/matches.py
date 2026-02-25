@@ -8,22 +8,30 @@ app = typer.Typer(help="View and act on matches")
 
 
 @app.command("list")
-def list_matches(project_id: str = typer.Argument(..., help="Project UUID")):
+def list_matches(
+    project_id: str = typer.Argument(..., help="Project UUID"),
+    listing_type: str = typer.Option(None, "--type", help="Filter by listing type (private, public, scraped)"),
+):
     """List matches for a project."""
     client = get_client()
-    response = client.get(f"/projects/{project_id}/matches")
+    url = f"/projects/{project_id}/matches"
+    if listing_type:
+        url += f"?listing_type={listing_type}"
+    response = client.get(url)
     data = response.json()
     matches = data.get("matches", [])
     if not matches:
         typer.echo("No matches found.")
         return
-    typer.echo(f"{'Match ID':<38} {'Tier':<10} {'Similarity':<12} {'Status'}")
-    typer.echo("-" * 80)
+    typer.echo(f"{'Match ID':<38} {'Type':<10} {'Tier':<10} {'Similarity':<12} {'Status':<12} {'Name'}")
+    typer.echo("-" * 100)
     for m in matches:
+        lt = m.get("listing_type", "private")
         status = m.get("introduction_status") or "-"
+        name = m.get("other_project", {}).get("display_name") or "-"
         typer.echo(
-            f"{m['match_id']:<38} {m['tier']:<10} "
-            f"{m['similarity']:<12.4f} {status}"
+            f"{m['match_id']:<38} {lt:<10} {m['tier']:<10} "
+            f"{m['similarity']:<12.4f} {status:<12} {name}"
         )
 
 
@@ -49,6 +57,36 @@ def show(
 
     typer.echo(f"\nMatch: {match['tier']} ({match['similarity']:.0%} similar)")
     typer.echo(f"Lifecycle: {match.get('other_project', {}).get('lifecycle_stage', 'unknown')}")
+
+    other = match.get("other_project", {})
+    lt = match.get("listing_type", "private")
+
+    if lt != "private":
+        typer.echo(f"Type: [{lt.upper()}]")
+    if other.get("display_name"):
+        typer.echo(f"Project: {other['display_name']}")
+    if other.get("repo_url"):
+        typer.echo(f"Repository: {other['repo_url']}")
+
+    meta = other.get("repo_metadata")
+    if meta:
+        parts = []
+        if meta.get("stars") is not None:
+            parts.append(f"{meta['stars']} stars")
+        if meta.get("license"):
+            parts.append(meta["license"])
+        if meta.get("contributor_count") is not None:
+            parts.append(f"{meta['contributor_count']} contributors")
+        if parts:
+            typer.echo(f"  {' · '.join(parts)}")
+        if meta.get("description"):
+            typer.echo(f"  {meta['description']}")
+        if meta.get("topics"):
+            typer.echo(f"  Topics: {', '.join(meta['topics'])}")
+        if meta.get("last_commit_at"):
+            typer.echo(f"  Last commit: {meta['last_commit_at'][:10]}")
+        if meta.get("scraped_at"):
+            typer.echo(f"  Scraped: {meta['scraped_at'][:10]}")
 
     comparison = match.get("comparison")
     if not comparison:

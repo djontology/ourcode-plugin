@@ -44,7 +44,7 @@ def _set_response(client, json_data, status_code=200):
 
 def test_profile_show(_patch_get_client):
     client = _patch_get_client
-    _set_response(client, {"has_contact_info": True, "project_count": 2})
+    _set_response(client, {"has_contact_info": True, "project_count": 2, "contact_method_count": 1})
 
     with patch("cli.profile.get_client", return_value=client):
         result = runner.invoke(profile_app, ["show"])
@@ -52,6 +52,150 @@ def test_profile_show(_patch_get_client):
     assert result.exit_code == 0
     assert "Contact info set: True" in result.output
     assert "Projects: 2" in result.output
+    assert "Contact methods: 1" in result.output
+
+
+def test_profile_set_contact_single_method(_patch_get_client):
+    client = _patch_get_client
+    _set_response(client, {
+        "methods": [
+            {"type": "email", "value": "you@example.com", "preferred": True}
+        ]
+    })
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["set-contact", "-m", "email:you@example.com", "-p", "email"])
+
+    assert result.exit_code == 0
+    assert "Contact info updated:" in result.output
+    assert "email: you@example.com (preferred)" in result.output
+    client.post.assert_called_once()
+
+
+def test_profile_set_contact_multiple_methods(_patch_get_client):
+    client = _patch_get_client
+    _set_response(client, {
+        "methods": [
+            {"type": "email", "value": "you@example.com", "preferred": True},
+            {"type": "discord", "value": "yourname#1234", "preferred": False},
+            {"type": "linkedin", "value": "https://linkedin.com/in/yourname", "preferred": False}
+        ]
+    })
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, [
+            "set-contact",
+            "-m", "email:you@example.com",
+            "-m", "discord:yourname#1234",
+            "-m", "linkedin:https://linkedin.com/in/yourname",
+            "-p", "email"
+        ])
+
+    assert result.exit_code == 0
+    assert "Contact info updated:" in result.output
+    assert "email: you@example.com (preferred)" in result.output
+    assert "discord: yourname#1234" in result.output
+    assert "linkedin: https://linkedin.com/in/yourname" in result.output
+
+
+def test_profile_set_contact_all_types(_patch_get_client):
+    """Verify all known contact types are accepted."""
+    client = _patch_get_client
+    _set_response(client, {
+        "methods": [
+            {"type": "email", "value": "test@example.com", "preferred": True},
+            {"type": "slack", "value": "yourname", "preferred": False},
+            {"type": "twitter", "value": "@yourname", "preferred": False},
+            {"type": "github_discussion", "value": "yourrepo", "preferred": False},
+            {"type": "other", "value": "custom_value", "preferred": False}
+        ]
+    })
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, [
+            "set-contact",
+            "-m", "email:test@example.com",
+            "-m", "slack:yourname",
+            "-m", "twitter:@yourname",
+            "-m", "github_discussion:yourrepo",
+            "-m", "other:custom_value",
+            "-p", "email"
+        ])
+
+    assert result.exit_code == 0
+    assert "slack: yourname" in result.output
+    assert "twitter: @yourname" in result.output
+    assert "github_discussion: yourrepo" in result.output
+    assert "other: custom_value" in result.output
+
+
+def test_profile_set_contact_with_timezone_and_notes(_patch_get_client):
+    client = _patch_get_client
+    _set_response(client, {
+        "methods": [
+            {"type": "email", "value": "you@example.com", "preferred": True}
+        ],
+        "timezone": "America/New_York",
+        "notes": "Available evenings"
+    })
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, [
+            "set-contact",
+            "-m", "email:you@example.com",
+            "-p", "email",
+            "-t", "America/New_York",
+            "-n", "Available evenings"
+        ])
+
+    assert result.exit_code == 0
+    assert "Contact info updated:" in result.output
+    assert "Timezone: America/New_York" in result.output
+    assert "Notes: Available evenings" in result.output
+
+
+def test_profile_set_contact_invalid_format(_patch_get_client):
+    client = _patch_get_client
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, [
+            "set-contact",
+            "-m", "invalid_no_colon",
+            "-p", "email"
+        ])
+
+    assert result.exit_code == 1
+    assert "Invalid method format" in result.output
+
+
+def test_profile_set_contact_unknown_type(_patch_get_client):
+    client = _patch_get_client
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, [
+            "set-contact",
+            "-m", "email:test@example.com",
+            "-m", "unknown_type:value",
+            "-p", "email"
+        ])
+
+    assert result.exit_code == 1
+    assert "Unknown contact type" in result.output
+
+
+def test_profile_set_contact_preferred_not_found(_patch_get_client):
+    client = _patch_get_client
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, [
+            "set-contact",
+            "-m", "email:test@example.com",
+            "-p", "discord"
+        ])
+
+    assert result.exit_code == 1
+    assert "Preferred type" in result.output
+    assert "not found" in result.output
 
 
 def test_profile_delete_confirmed(_patch_get_client):
@@ -185,6 +329,8 @@ def test_matches_list(_patch_get_client):
                 "tier": "exact",
                 "similarity": 0.9512,
                 "introduction_status": "pending",
+                "listing_type": "public",
+                "other_project": {"display_name": "Project Alpha"},
             }
         ]
     })
@@ -195,6 +341,58 @@ def test_matches_list(_patch_get_client):
     assert result.exit_code == 0
     assert "m-1" in result.output
     assert "exact" in result.output
+    assert "public" in result.output
+    assert "Project Alpha" in result.output
+
+
+def test_matches_list_with_filter(_patch_get_client):
+    """Test that --type filter appends ?listing_type=<value> to the URL."""
+    client = _patch_get_client
+    _set_response(client, {
+        "matches": [
+            {
+                "match_id": "m-2",
+                "tier": "partial",
+                "similarity": 0.8,
+                "introduction_status": None,
+                "listing_type": "scraped",
+                "other_project": {"display_name": "Open Source Repo"},
+            }
+        ]
+    })
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["list", "proj-1", "--type", "scraped"])
+
+    assert result.exit_code == 0
+    assert "m-2" in result.output
+    assert "scraped" in result.output
+    # Verify the URL was called with the filter
+    client.get.assert_called_once_with("/projects/proj-1/matches?listing_type=scraped")
+
+
+def test_matches_list_private_no_name(_patch_get_client):
+    """Test that private matches without display_name show '-'."""
+    client = _patch_get_client
+    _set_response(client, {
+        "matches": [
+            {
+                "match_id": "m-3",
+                "tier": "related",
+                "similarity": 0.65,
+                "introduction_status": None,
+                "listing_type": "private",
+                "other_project": {},
+            }
+        ]
+    })
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["list", "proj-1"])
+
+    assert result.exit_code == 0
+    assert "private" in result.output
+    assert "-" in result.output
 
 
 def test_matches_show_with_comparison(_patch_get_client):
@@ -205,7 +403,8 @@ def test_matches_show_with_comparison(_patch_get_client):
                 "match_id": "m-1",
                 "tier": "exact",
                 "similarity": 0.95,
-                "other_project": {"lifecycle_stage": "active"},
+                "listing_type": "public",
+                "other_project": {"lifecycle_stage": "active", "display_name": "Project Beta"},
                 "comparison": {
                     "your_architecture": "monolith",
                     "their_architecture": "monolith",
@@ -236,6 +435,70 @@ def test_matches_show_with_comparison(_patch_get_client):
     assert "95%" in result.output
     assert "monolith" in result.output
     assert "analytics" in result.output
+    assert "[PUBLIC]" in result.output
+    assert "Project Beta" in result.output
+
+
+def test_matches_show_scraped_with_repo_metadata(_patch_get_client):
+    """Test that scraped matches show listing type badge and repo metadata."""
+    client = _patch_get_client
+    _set_response(client, {
+        "matches": [
+            {
+                "match_id": "m-2",
+                "tier": "partial",
+                "similarity": 0.82,
+                "listing_type": "scraped",
+                "other_project": {
+                    "lifecycle_stage": "active",
+                    "display_name": "Open Source Project",
+                    "repo_url": "https://github.com/example/project",
+                    "repo_metadata": {
+                        "stars": 1250,
+                        "license": "MIT",
+                        "contributor_count": 45,
+                        "description": "An amazing open source project",
+                        "topics": ["python", "api", "database"],
+                        "last_commit_at": "2025-02-24T10:30:00Z",
+                        "scraped_at": "2025-02-24T15:00:00Z"
+                    }
+                },
+                "comparison": {
+                    "your_architecture": "microservices",
+                    "their_architecture": "monolith",
+                    "architecture_match": False,
+                    "your_lifecycle_stage": "mvp",
+                    "their_lifecycle_stage": "active",
+                    "shared_goals": ["api"],
+                    "unique_to_yours": [],
+                    "unique_to_theirs": [],
+                    "shared_languages": ["python"],
+                    "unique_languages_yours": [],
+                    "unique_languages_theirs": [],
+                    "shared_frameworks": [],
+                    "unique_frameworks_yours": [],
+                    "unique_frameworks_theirs": [],
+                    "shared_libraries": [],
+                    "unique_libraries_yours": [],
+                    "unique_libraries_theirs": [],
+                },
+            }
+        ]
+    })
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["show", "m-2", "--project", "proj-1"])
+
+    assert result.exit_code == 0
+    assert "[SCRAPED]" in result.output
+    assert "Open Source Project" in result.output
+    assert "https://github.com/example/project" in result.output
+    assert "1250 stars" in result.output
+    assert "MIT" in result.output
+    assert "45 contributors" in result.output
+    assert "An amazing open source project" in result.output
+    assert "python" in result.output
+    assert "2025-02-24" in result.output
 
 
 def test_matches_show_not_found(_patch_get_client):
