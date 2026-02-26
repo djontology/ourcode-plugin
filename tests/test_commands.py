@@ -633,6 +633,71 @@ def test_match_show_private_no_repo_metadata(_patch_get_client):
     assert "contributors" not in result.output
 
 
+def test_matches_show_auto_detects_single_project(_patch_get_client):
+    """When --project is omitted and user has one project, auto-detect it."""
+    client = _patch_get_client
+    # First call: /projects returns one project; second call: /projects/{id}/matches
+    projects_resp = MagicMock()
+    projects_resp.json.return_value = {"projects": [{"id": "auto-proj", "lifecycle_stage": "mvp"}]}
+    matches_resp = MagicMock()
+    matches_resp.json.return_value = {"matches": []}
+    client.get.side_effect = [projects_resp, matches_resp]
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["show", "m-1"])
+
+    assert result.exit_code == 1  # "not found" but the point is it resolved the project
+    assert "auto-proj" in result.output
+
+
+def test_matches_show_errors_with_multiple_projects(_patch_get_client):
+    """When --project is omitted and user has multiple projects, show error listing them."""
+    client = _patch_get_client
+    resp = MagicMock()
+    resp.json.return_value = {"projects": [
+        {"id": "proj-a", "lifecycle_stage": "mvp"},
+        {"id": "proj-b", "lifecycle_stage": "prototype"},
+    ]}
+    client.get.return_value = resp
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["show", "m-1"])
+
+    assert result.exit_code == 1
+    assert "proj-a" in result.output
+    assert "proj-b" in result.output
+
+
+def test_matches_show_errors_with_no_projects(_patch_get_client):
+    """When --project is omitted and user has no projects, show error."""
+    client = _patch_get_client
+    resp = MagicMock()
+    resp.json.return_value = {"projects": []}
+    client.get.return_value = resp
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["show", "m-1"])
+
+    assert result.exit_code == 1
+    assert "no projects" in result.output.lower()
+
+
+def test_matches_list_auto_detects_single_project(_patch_get_client):
+    """matches list without project_id arg auto-detects when user has one project."""
+    client = _patch_get_client
+    projects_resp = MagicMock()
+    projects_resp.json.return_value = {"projects": [{"id": "auto-proj", "lifecycle_stage": "mvp"}]}
+    matches_resp = MagicMock()
+    matches_resp.json.return_value = {"matches": []}
+    client.get.side_effect = [projects_resp, matches_resp]
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["list"])
+
+    assert result.exit_code == 0
+    assert "No matches" in result.output
+
+
 def test_match_list_no_filter_no_query_param(_patch_get_client):
     """Test that matches list without --type filter calls client.get with no query string."""
     client = _patch_get_client

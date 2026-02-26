@@ -7,13 +7,31 @@ from cli.client import get_client, format_contact_info
 app = typer.Typer(help="View and act on matches")
 
 
+def _resolve_project_id(client, project_id: str | None) -> str:
+    """Return the given project_id, or auto-detect if the user has exactly one project."""
+    if project_id:
+        return project_id
+    response = client.get("/projects")
+    projects = response.json().get("projects", [])
+    if not projects:
+        typer.echo("No projects found. Submit a project first.", err=True)
+        raise typer.Exit(code=1)
+    if len(projects) == 1:
+        return projects[0]["id"]
+    typer.echo("Multiple projects found. Specify one with --project:", err=True)
+    for p in projects:
+        typer.echo(f"  {p['id']}  ({p['lifecycle_stage']})", err=True)
+    raise typer.Exit(code=1)
+
+
 @app.command("list")
 def list_matches(
-    project_id: str = typer.Argument(..., help="Project UUID"),
+    project_id: str = typer.Argument(None, help="Project UUID (auto-detected if you have one project)"),
     listing_type: str = typer.Option(None, "--type", help="Filter by listing type (private, public, scraped)"),
 ):
     """List matches for a project."""
     client = get_client()
+    project_id = _resolve_project_id(client, project_id)
     url = f"/projects/{project_id}/matches"
     if listing_type:
         url += f"?listing_type={listing_type}"
@@ -38,10 +56,11 @@ def list_matches(
 @app.command()
 def show(
     match_id: str = typer.Argument(..., help="Match ID to display"),
-    project_id: str = typer.Option(..., "--project", help="Project ID that owns the match"),
+    project_id: str = typer.Option(None, "--project", help="Project ID (auto-detected if you have one project)"),
 ):
     """Show detailed comparison for a specific match."""
     client = get_client()
+    project_id = _resolve_project_id(client, project_id)
     response = client.get(f"/projects/{project_id}/matches")
     data = response.json()
 
