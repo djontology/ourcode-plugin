@@ -2,7 +2,7 @@
 
 import typer
 
-from cli.client import get_client
+from cli.client import get_client, format_contact_info
 
 app = typer.Typer(help="Manage introductions")
 
@@ -49,9 +49,9 @@ def accept(introduction_id: str = typer.Argument(..., help="Introduction UUID"))
     data = response.json()
     typer.echo(f"Introduction accepted: {data['id']}")
     if data.get("requester_contact_info"):
-        typer.echo(f"Requester contact info: {data['requester_contact_info']}")
+        typer.echo(f"Requester contact info:\n{format_contact_info(data['requester_contact_info'])}")
     if data.get("target_contact_info"):
-        typer.echo(f"Your contact info shared: {data['target_contact_info']}")
+        typer.echo(f"Your contact info shared:\n{format_contact_info(data['target_contact_info'])}")
 
 
 @app.command()

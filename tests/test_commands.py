@@ -44,7 +44,7 @@ def _set_response(client, json_data, status_code=200):
 
 def test_profile_show(_patch_get_client):
     client = _patch_get_client
-    _set_response(client, {"has_contact_info": True, "project_count": 2})
+    _set_response(client, {"has_contact_info": True, "project_count": 2, "contact_method_count": 1})
 
     with patch("cli.profile.get_client", return_value=client):
         result = runner.invoke(profile_app, ["show"])
@@ -52,6 +52,292 @@ def test_profile_show(_patch_get_client):
     assert result.exit_code == 0
     assert "Contact info set: True" in result.output
     assert "Projects: 2" in result.output
+    assert "Contact methods: 1" in result.output
+
+
+def test_profile_show_omits_contact_method_count_when_zero(_patch_get_client):
+    """Test that contact_method_count of 0 omits the 'Contact methods:' line from output."""
+    client = _patch_get_client
+    _set_response(client, {"has_contact_info": False, "project_count": 0, "contact_method_count": 0})
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["show"])
+
+    assert result.exit_code == 0
+    assert "Contact info set: False" in result.output
+    assert "Projects: 0" in result.output
+    # Ensure "Contact methods:" does NOT appear in output when count is 0
+    assert "Contact methods:" not in result.output
+
+
+def test_profile_set_contact_single_method(_patch_get_client):
+    client = _patch_get_client
+    _set_response(client, {
+        "methods": [
+            {"type": "email", "value": "you@example.com", "preferred": True}
+        ]
+    })
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["set-contact", "-m", "email:you@example.com", "-p", "email"])
+
+    assert result.exit_code == 0
+    assert "Contact info updated:" in result.output
+    assert "email: you@example.com (preferred)" in result.output
+    client.post.assert_called_once()
+
+
+def test_profile_set_contact_multiple_methods(_patch_get_client):
+    client = _patch_get_client
+    _set_response(client, {
+        "methods": [
+            {"type": "email", "value": "you@example.com", "preferred": True},
+            {"type": "discord", "value": "yourname#1234", "preferred": False},
+            {"type": "linkedin", "value": "https://linkedin.com/in/yourname", "preferred": False}
+        ]
+    })
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, [
+            "set-contact",
+            "-m", "email:you@example.com",
+            "-m", "discord:yourname#1234",
+            "-m", "linkedin:https://linkedin.com/in/yourname",
+            "-p", "email"
+        ])
+
+    assert result.exit_code == 0
+    assert "Contact info updated:" in result.output
+    assert "email: you@example.com (preferred)" in result.output
+    assert "discord: yourname#1234" in result.output
+    assert "linkedin: https://linkedin.com/in/yourname" in result.output
+
+
+def test_profile_set_contact_all_types(_patch_get_client):
+    """Verify all known contact types are accepted."""
+    client = _patch_get_client
+    _set_response(client, {
+        "methods": [
+            {"type": "email", "value": "test@example.com", "preferred": True},
+            {"type": "slack", "value": "yourname", "preferred": False},
+            {"type": "twitter", "value": "@yourname", "preferred": False},
+            {"type": "github_discussion", "value": "yourrepo", "preferred": False},
+            {"type": "other", "value": "custom_value", "preferred": False}
+        ]
+    })
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, [
+            "set-contact",
+            "-m", "email:test@example.com",
+            "-m", "slack:yourname",
+            "-m", "twitter:@yourname",
+            "-m", "github_discussion:yourrepo",
+            "-m", "other:custom_value",
+            "-p", "email"
+        ])
+
+    assert result.exit_code == 0
+    assert "slack: yourname" in result.output
+    assert "twitter: @yourname" in result.output
+    assert "github_discussion: yourrepo" in result.output
+    assert "other: custom_value" in result.output
+
+
+def test_profile_set_contact_with_timezone_and_notes(_patch_get_client):
+    client = _patch_get_client
+    _set_response(client, {
+        "methods": [
+            {"type": "email", "value": "you@example.com", "preferred": True}
+        ],
+        "timezone": "America/New_York",
+        "notes": "Available evenings"
+    })
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, [
+            "set-contact",
+            "-m", "email:you@example.com",
+            "-p", "email",
+            "-t", "America/New_York",
+            "-n", "Available evenings"
+        ])
+
+    assert result.exit_code == 0
+    assert "Contact info updated:" in result.output
+    assert "Timezone: America/New_York" in result.output
+    assert "Notes: Available evenings" in result.output
+
+
+def test_profile_set_contact_invalid_format(_patch_get_client):
+    client = _patch_get_client
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, [
+            "set-contact",
+            "-m", "invalid_no_colon",
+            "-p", "email"
+        ])
+
+    assert result.exit_code == 1
+    assert "Invalid method format" in result.output
+
+
+def test_profile_set_contact_unknown_type(_patch_get_client):
+    client = _patch_get_client
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, [
+            "set-contact",
+            "-m", "email:test@example.com",
+            "-m", "unknown_type:value",
+            "-p", "email"
+        ])
+
+    assert result.exit_code == 1
+    assert "Unknown contact type" in result.output
+
+
+def test_profile_set_contact_preferred_not_found(_patch_get_client):
+    client = _patch_get_client
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, [
+            "set-contact",
+            "-m", "email:test@example.com",
+            "-p", "discord"
+        ])
+
+    assert result.exit_code == 1
+    assert "Preferred type" in result.output
+    assert "not found" in result.output
+
+
+def test_profile_add_contact_to_existing(_patch_get_client):
+    """add-contact appends a new method to existing contact info."""
+    client = _patch_get_client
+    # GET returns existing contact info; POST returns updated
+    get_resp = MagicMock()
+    get_resp.json.return_value = {"contact_info": {
+        "methods": [{"type": "email", "value": "me@example.com", "preferred": True}]
+    }}
+    post_resp = MagicMock()
+    post_resp.json.return_value = {"contact_info": {
+        "methods": [
+            {"type": "email", "value": "me@example.com", "preferred": True},
+            {"type": "linkedin", "value": "testerson", "preferred": False},
+        ]
+    }}
+    client.get.return_value = get_resp
+    client.post.return_value = post_resp
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["add-contact", "linkedin:testerson"])
+
+    assert result.exit_code == 0
+    assert "linkedin: testerson" in result.output
+    assert "email: me@example.com (preferred)" in result.output
+
+
+def test_profile_add_contact_replaces_same_type(_patch_get_client):
+    """add-contact replaces the value if the type already exists."""
+    client = _patch_get_client
+    get_resp = MagicMock()
+    get_resp.json.return_value = {"contact_info": {
+        "methods": [{"type": "email", "value": "old@example.com", "preferred": True}]
+    }}
+    post_resp = MagicMock()
+    post_resp.json.return_value = {"contact_info": {
+        "methods": [{"type": "email", "value": "new@example.com", "preferred": True}]
+    }}
+    client.get.return_value = get_resp
+    client.post.return_value = post_resp
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["add-contact", "email:new@example.com"])
+
+    assert result.exit_code == 0
+    # Verify the POST payload replaced the value
+    call_args = client.post.call_args
+    methods = call_args[1]["json"]["contact_info"]["methods"]
+    assert methods[0]["value"] == "new@example.com"
+
+
+def test_profile_add_contact_when_none_exists(_patch_get_client):
+    """add-contact creates contact info if none set, marking it preferred."""
+    client = _patch_get_client
+    import httpx
+    get_resp = MagicMock()
+    get_resp.status_code = 404
+    error = httpx.HTTPStatusError("not found", request=MagicMock(), response=get_resp)
+    client.get.side_effect = error
+    post_resp = MagicMock()
+    post_resp.json.return_value = {"contact_info": {
+        "methods": [{"type": "email", "value": "me@example.com", "preferred": True}]
+    }}
+    client.post.return_value = post_resp
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["add-contact", "email:me@example.com"])
+
+    assert result.exit_code == 0
+    assert "Contact info created:" in result.output
+
+
+def test_profile_remove_contact(_patch_get_client):
+    """remove-contact removes a method by type."""
+    client = _patch_get_client
+    get_resp = MagicMock()
+    get_resp.json.return_value = {"contact_info": {
+        "methods": [
+            {"type": "email", "value": "me@example.com", "preferred": True},
+            {"type": "linkedin", "value": "testerson", "preferred": False},
+        ]
+    }}
+    post_resp = MagicMock()
+    post_resp.json.return_value = {"contact_info": {
+        "methods": [{"type": "email", "value": "me@example.com", "preferred": True}]
+    }}
+    client.get.return_value = get_resp
+    client.post.return_value = post_resp
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["remove-contact", "linkedin"])
+
+    assert result.exit_code == 0
+    assert "Removed linkedin" in result.output
+
+
+def test_profile_remove_contact_not_found(_patch_get_client):
+    """remove-contact errors when the type doesn't exist."""
+    client = _patch_get_client
+    get_resp = MagicMock()
+    get_resp.json.return_value = {"contact_info": {
+        "methods": [{"type": "email", "value": "me@example.com", "preferred": True}]
+    }}
+    client.get.return_value = get_resp
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["remove-contact", "linkedin"])
+
+    assert result.exit_code == 1
+    assert "linkedin" in result.output.lower()
+
+
+def test_profile_remove_contact_last_method_blocked(_patch_get_client):
+    """remove-contact refuses to remove the last method."""
+    client = _patch_get_client
+    get_resp = MagicMock()
+    get_resp.json.return_value = {"contact_info": {
+        "methods": [{"type": "email", "value": "me@example.com", "preferred": True}]
+    }}
+    client.get.return_value = get_resp
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["remove-contact", "email"])
+
+    assert result.exit_code == 1
+    assert "last contact method" in result.output.lower()
 
 
 def test_profile_delete_confirmed(_patch_get_client):
@@ -150,6 +436,62 @@ def test_projects_submit_with_matches(_patch_get_client, tmp_path):
     assert "Create discovery platform" in result.output
 
 
+def test_projects_submit_with_scraped_matches(_patch_get_client, tmp_path):
+    """Test that submit command displays listing type badges and repo URLs for scraped matches."""
+    client = _patch_get_client
+    _set_response(client, {
+        "id": "proj-new-789",
+        "lifecycle_stage": "mvp",
+        "is_registered": True,
+        "expires_at": None,
+        "created_at": "2025-02-01T00:00:00Z",
+        "matches": [
+            {
+                "project_id": "match-proj-1",
+                "tier": "exact",
+                "similarity": 0.94,
+                "lifecycle_stage": "mvp",
+                "listing_type": "scraped",
+                "display_name": "Open Source API Framework",
+                "repo_url": "https://github.com/example/api-framework",
+                "summary": {
+                    "project": {"goals": ["Build a matching service"]},
+                    "tech_stack": {"languages": ["Python"], "frameworks": ["FastAPI"]},
+                },
+            },
+            {
+                "project_id": "match-proj-2",
+                "tier": "partial",
+                "similarity": 0.81,
+                "lifecycle_stage": "prototype",
+                "listing_type": "private",
+                "display_name": None,
+                "repo_url": None,
+                "summary": {
+                    "project": {"goals": ["Create discovery platform"]},
+                    "tech_stack": {"languages": ["TypeScript"], "frameworks": ["Next.js"]},
+                },
+            },
+        ],
+    })
+
+    summary_file = tmp_path / "summary.json"
+    summary_file.write_text('{"schema_version": "2.0", "project": {}, "tech_stack": {}}')
+
+    with patch("cli.projects.get_client", return_value=client):
+        result = runner.invoke(projects_app, ["submit", str(summary_file)])
+
+    assert result.exit_code == 0
+    assert "proj-new-789" in result.output
+    assert "Exact matches" in result.output
+    assert "[SCRAPED]" in result.output
+    assert "Open Source API Framework" in result.output
+    assert "https://github.com/example/api-framework" in result.output
+    assert "Build a matching service" in result.output
+    assert "Partial matches" in result.output
+    assert "Create discovery platform" in result.output
+
+
 def test_projects_submit_no_matches(_patch_get_client, tmp_path):
     client = _patch_get_client
     _set_response(client, {
@@ -185,6 +527,8 @@ def test_matches_list(_patch_get_client):
                 "tier": "exact",
                 "similarity": 0.9512,
                 "introduction_status": "pending",
+                "listing_type": "public",
+                "other_project": {"display_name": "Project Alpha"},
             }
         ]
     })
@@ -195,6 +539,58 @@ def test_matches_list(_patch_get_client):
     assert result.exit_code == 0
     assert "m-1" in result.output
     assert "exact" in result.output
+    assert "public" in result.output
+    assert "Project Alpha" in result.output
+
+
+def test_matches_list_with_filter(_patch_get_client):
+    """Test that --type filter appends ?listing_type=<value> to the URL."""
+    client = _patch_get_client
+    _set_response(client, {
+        "matches": [
+            {
+                "match_id": "m-2",
+                "tier": "partial",
+                "similarity": 0.8,
+                "introduction_status": None,
+                "listing_type": "scraped",
+                "other_project": {"display_name": "Open Source Repo"},
+            }
+        ]
+    })
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["list", "proj-1", "--type", "scraped"])
+
+    assert result.exit_code == 0
+    assert "m-2" in result.output
+    assert "scraped" in result.output
+    # Verify the URL was called with the filter
+    client.get.assert_called_once_with("/projects/proj-1/matches?listing_type=scraped")
+
+
+def test_matches_list_private_no_name(_patch_get_client):
+    """Test that private matches without display_name show '-'."""
+    client = _patch_get_client
+    _set_response(client, {
+        "matches": [
+            {
+                "match_id": "m-3",
+                "tier": "related",
+                "similarity": 0.65,
+                "introduction_status": None,
+                "listing_type": "private",
+                "other_project": {},
+            }
+        ]
+    })
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["list", "proj-1"])
+
+    assert result.exit_code == 0
+    assert "private" in result.output
+    assert "-" in result.output
 
 
 def test_matches_show_with_comparison(_patch_get_client):
@@ -205,7 +601,8 @@ def test_matches_show_with_comparison(_patch_get_client):
                 "match_id": "m-1",
                 "tier": "exact",
                 "similarity": 0.95,
-                "other_project": {"lifecycle_stage": "active"},
+                "listing_type": "public",
+                "other_project": {"lifecycle_stage": "active", "display_name": "Project Beta"},
                 "comparison": {
                     "your_architecture": "monolith",
                     "their_architecture": "monolith",
@@ -236,6 +633,70 @@ def test_matches_show_with_comparison(_patch_get_client):
     assert "95%" in result.output
     assert "monolith" in result.output
     assert "analytics" in result.output
+    assert "[PUBLIC]" in result.output
+    assert "Project Beta" in result.output
+
+
+def test_matches_show_scraped_with_repo_metadata(_patch_get_client):
+    """Test that scraped matches show listing type badge and repo metadata."""
+    client = _patch_get_client
+    _set_response(client, {
+        "matches": [
+            {
+                "match_id": "m-2",
+                "tier": "partial",
+                "similarity": 0.82,
+                "listing_type": "scraped",
+                "other_project": {
+                    "lifecycle_stage": "active",
+                    "display_name": "Open Source Project",
+                    "repo_url": "https://github.com/example/project",
+                    "repo_metadata": {
+                        "stars": 1250,
+                        "license": "MIT",
+                        "contributor_count": 45,
+                        "description": "An amazing open source project",
+                        "topics": ["python", "api", "database"],
+                        "last_commit_at": "2025-02-24T10:30:00Z",
+                        "scraped_at": "2025-02-24T15:00:00Z"
+                    }
+                },
+                "comparison": {
+                    "your_architecture": "microservices",
+                    "their_architecture": "monolith",
+                    "architecture_match": False,
+                    "your_lifecycle_stage": "mvp",
+                    "their_lifecycle_stage": "active",
+                    "shared_goals": ["api"],
+                    "unique_to_yours": [],
+                    "unique_to_theirs": [],
+                    "shared_languages": ["python"],
+                    "unique_languages_yours": [],
+                    "unique_languages_theirs": [],
+                    "shared_frameworks": [],
+                    "unique_frameworks_yours": [],
+                    "unique_frameworks_theirs": [],
+                    "shared_libraries": [],
+                    "unique_libraries_yours": [],
+                    "unique_libraries_theirs": [],
+                },
+            }
+        ]
+    })
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["show", "m-2", "--project", "proj-1"])
+
+    assert result.exit_code == 0
+    assert "[SCRAPED]" in result.output
+    assert "Open Source Project" in result.output
+    assert "https://github.com/example/project" in result.output
+    assert "1250 stars" in result.output
+    assert "MIT" in result.output
+    assert "45 contributors" in result.output
+    assert "An amazing open source project" in result.output
+    assert "python" in result.output
+    assert "2025-02-24" in result.output
 
 
 def test_matches_show_not_found(_patch_get_client):
@@ -247,6 +708,146 @@ def test_matches_show_not_found(_patch_get_client):
 
     assert result.exit_code == 1
     assert "not found" in result.output.lower()
+
+
+def test_match_show_private_no_repo_metadata(_patch_get_client):
+    """Test that private match with null repo_url and repo_metadata omits repository section."""
+    client = _patch_get_client
+    _set_response(client, {
+        "matches": [
+            {
+                "match_id": "m-private",
+                "tier": "related",
+                "similarity": 0.70,
+                "listing_type": "private",
+                "other_project": {
+                    "lifecycle_stage": "prototype",
+                    "display_name": None,
+                    "repo_url": None,
+                    "repo_metadata": None,
+                },
+                "comparison": {
+                    "your_architecture": "monolith",
+                    "their_architecture": "monolith",
+                    "architecture_match": True,
+                    "your_lifecycle_stage": "active",
+                    "their_lifecycle_stage": "prototype",
+                    "shared_goals": [],
+                    "unique_to_yours": [],
+                    "unique_to_theirs": [],
+                    "shared_languages": [],
+                    "unique_languages_yours": [],
+                    "unique_languages_theirs": [],
+                    "shared_frameworks": [],
+                    "unique_frameworks_yours": [],
+                    "unique_frameworks_theirs": [],
+                    "shared_libraries": [],
+                    "unique_libraries_yours": [],
+                    "unique_libraries_theirs": [],
+                },
+            }
+        ]
+    })
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["show", "m-private", "--project", "proj-1"])
+
+    assert result.exit_code == 0
+    # Ensure repo metadata sections do NOT appear
+    assert "Repository:" not in result.output
+    assert "stars" not in result.output
+    assert "license" not in result.output
+    assert "contributors" not in result.output
+
+
+def test_matches_show_auto_detects_single_project(_patch_get_client):
+    """When --project is omitted and user has one project, auto-detect it."""
+    client = _patch_get_client
+    # First call: /projects returns one project; second call: /projects/{id}/matches
+    projects_resp = MagicMock()
+    projects_resp.json.return_value = {"projects": [{"id": "auto-proj", "lifecycle_stage": "mvp"}]}
+    matches_resp = MagicMock()
+    matches_resp.json.return_value = {"matches": []}
+    client.get.side_effect = [projects_resp, matches_resp]
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["show", "m-1"])
+
+    assert result.exit_code == 1  # "not found" but the point is it resolved the project
+    assert "auto-proj" in result.output
+
+
+def test_matches_show_errors_with_multiple_projects(_patch_get_client):
+    """When --project is omitted and user has multiple projects, show error listing them."""
+    client = _patch_get_client
+    resp = MagicMock()
+    resp.json.return_value = {"projects": [
+        {"id": "proj-a", "lifecycle_stage": "mvp"},
+        {"id": "proj-b", "lifecycle_stage": "prototype"},
+    ]}
+    client.get.return_value = resp
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["show", "m-1"])
+
+    assert result.exit_code == 1
+    assert "proj-a" in result.output
+    assert "proj-b" in result.output
+
+
+def test_matches_show_errors_with_no_projects(_patch_get_client):
+    """When --project is omitted and user has no projects, show error."""
+    client = _patch_get_client
+    resp = MagicMock()
+    resp.json.return_value = {"projects": []}
+    client.get.return_value = resp
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["show", "m-1"])
+
+    assert result.exit_code == 1
+    assert "no projects" in result.output.lower()
+
+
+def test_matches_list_auto_detects_single_project(_patch_get_client):
+    """matches list without project_id arg auto-detects when user has one project."""
+    client = _patch_get_client
+    projects_resp = MagicMock()
+    projects_resp.json.return_value = {"projects": [{"id": "auto-proj", "lifecycle_stage": "mvp"}]}
+    matches_resp = MagicMock()
+    matches_resp.json.return_value = {"matches": []}
+    client.get.side_effect = [projects_resp, matches_resp]
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["list"])
+
+    assert result.exit_code == 0
+    assert "No matches" in result.output
+
+
+def test_match_list_no_filter_no_query_param(_patch_get_client):
+    """Test that matches list without --type filter calls client.get with no query string."""
+    client = _patch_get_client
+    _set_response(client, {
+        "matches": [
+            {
+                "match_id": "m-1",
+                "tier": "exact",
+                "similarity": 0.95,
+                "introduction_status": "pending",
+                "listing_type": "public",
+                "other_project": {"display_name": "Project Alpha"},
+            }
+        ]
+    })
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["list", "proj-1"])
+
+    assert result.exit_code == 0
+    assert "m-1" in result.output
+    # Verify client.get was called with the URL without query params
+    client.get.assert_called_once_with("/projects/proj-1/matches")
 
 
 # -- intros --------------------------------------------------------------------
@@ -290,6 +891,56 @@ def test_intros_accept(_patch_get_client):
     assert "alice@example.com" in result.output
 
 
+def test_intros_accept_with_structured_contact_info(_patch_get_client):
+    """Test that accept command renders structured contact info with methods array."""
+    client = _patch_get_client
+    _set_response(client, {
+        "id": "i-1",
+        "status": "accepted",
+        "requester_contact_info": {
+            "methods": [
+                {"type": "email", "value": "alice@example.com", "preferred": True}
+            ],
+            "timezone": "America/New_York"
+        },
+        "target_contact_info": {
+            "methods": [
+                {"type": "email", "value": "bob@example.com", "preferred": True}
+            ],
+            "timezone": "Europe/London"
+        },
+    })
+
+    with patch("cli.intros.get_client", return_value=client):
+        result = runner.invoke(intros_app, ["accept", "i-1"])
+
+    assert result.exit_code == 0
+    assert "accepted" in result.output.lower()
+    assert "alice@example.com" in result.output
+    assert "bob@example.com" in result.output
+    assert "(preferred)" in result.output
+    assert "America/New_York" in result.output
+    assert "Europe/London" in result.output
+
+
+def test_intros_accept_with_legacy_contact_info(_patch_get_client):
+    """Test backward compatibility with plain-text contact info."""
+    client = _patch_get_client
+    _set_response(client, {
+        "id": "i-1",
+        "status": "accepted",
+        "requester_contact_info": "alice@example.com",
+        "target_contact_info": "bob@example.com",
+    })
+
+    with patch("cli.intros.get_client", return_value=client):
+        result = runner.invoke(intros_app, ["accept", "i-1"])
+
+    assert result.exit_code == 0
+    assert "accepted" in result.output.lower()
+    assert "alice@example.com" in result.output
+
+
 def test_intros_decline(_patch_get_client):
     client = _patch_get_client
     _set_response(client, {"id": "i-1", "status": "declined"})
@@ -299,3 +950,31 @@ def test_intros_decline(_patch_get_client):
 
     assert result.exit_code == 0
     assert "declined" in result.output.lower()
+
+
+def test_matches_connect_with_auto_approve(_patch_get_client):
+    """Test that connect command with auto-approve response renders structured contact info."""
+    client = _patch_get_client
+    _set_response(client, {
+        "id": "i-2",
+        "status": "accepted",
+        "target_contact_info": {
+            "methods": [
+                {"type": "email", "value": "target@example.com", "preferred": True},
+                {"type": "discord", "value": "targetuser#5678", "preferred": False}
+            ],
+            "timezone": "US/Pacific",
+            "notes": "Available weekdays"
+        },
+    })
+
+    with patch("cli.matches.get_client", return_value=client):
+        result = runner.invoke(matches_app, ["connect", "m-1", "proj-1"])
+
+    assert result.exit_code == 0
+    assert "accepted" in result.output
+    assert "target@example.com" in result.output
+    assert "targetuser#5678" in result.output
+    assert "(preferred)" in result.output
+    assert "US/Pacific" in result.output
+    assert "Available weekdays" in result.output

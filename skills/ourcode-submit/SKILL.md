@@ -78,6 +78,11 @@ Found **3 similar projects**:
   - 94% similar (mvp)
     Goals: Build a developer matching service
     Tech: Python, FastAPI, pgvector
+  - 92% similar (mvp-v2)
+    [SCRAPED] Firebase Realtime DB Matching Service
+    Repo: https://github.com/example/firebase-matcher
+  - 88% similar (prototype)
+    [PUBLIC] Developer Network Platform
 
 **Partial matches** (overlapping goals, different approach):
   - 82% similar (prototype)
@@ -92,6 +97,10 @@ Found **3 similar projects**:
 For each matched project, extract from `matches[].summary`:
 - Goals: `summary.project.goals` (join with "; ")
 - Tech: `summary.tech_stack.languages` + `summary.tech_stack.frameworks` (join with ", ")
+
+**Match types explained:**
+- **Private/Public matches** (no badge or `[PUBLIC]`): Human-submitted projects. Request an introduction to connect with the developer.
+- **Scraped matches** (`[SCRAPED]`): Open-source repositories. Visit the repo URL directly — no introduction needed.
 
 ### Displaying Match Comparison Data
 
@@ -131,7 +140,7 @@ After displaying results, mention:
 
 Want to connect with a match? First set your contact info:
 ```bash
-ourcode profile set-contact 'email: you@example.com'
+ourcode profile set-contact -m email:you@example.com -p email
 ```
 
 Then request an introduction:

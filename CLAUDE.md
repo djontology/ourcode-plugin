@@ -1,6 +1,7 @@
 # plugin/
 
 <!-- Freshness: 2026-02-24 -->
+<!-- Last contract review: 2026-02-24 -->
 
 ## Purpose
 
@@ -31,6 +32,9 @@ src/cli/                      # Typer CLI (`ourcode` console script)
 - **Submit skill** sends the summary to `POST /api/projects` with Bearer token auth. Response includes `matches` array with similar projects grouped by tier (exact, partial, related), each containing decrypted summary, similarity score, and `comparison` data (shared/unique goals, tech stack, architecture).
 - **Setup skill** chains login, summarize, and submit into a single first-run flow. Checks for existing token, runs subagent for codebase analysis, displays matches with comparison data, and offers next steps (dashboard, contact info, introductions).
 - **Account skill** delegates to the `ourcode` CLI for profile management, match browsing (including `matches show` with comparison), and introduction handling. CLI reads config from `~/.ourcode/config`.
+- **Profile set-contact** uses structured contact methods: `--method type:value` (repeatable), `--preferred type`, optional `--timezone` and `--notes`. Valid contact types: email, discord, linkedin, slack, twitter, github_discussion, other. The API payload is `{methods: [{type, value, preferred}], timezone?, notes?}` to `POST /api/developers/me/contact-info`.
+- **Matches list** accepts an optional `--type` filter (private, public, scraped) passed as `?listing_type=` query param. Match output includes listing type, project display name, repo URL, and repo metadata (stars, license, contributors, topics, last commit, scraped date).
+- **Contact info display** uses `format_contact_info()` in `client.py` which handles both structured (dict with methods array) and legacy plain-string formats.
 - All API calls use the `/api/` prefix (e.g., `/api/auth/sessions`, `/api/projects`).
 - The summary schema is defined in `server/app/schemas/summary.py` -- any changes there must be reflected in the summarize skill output.
 
