@@ -2,6 +2,51 @@
 
 <!-- version list -->
 
+## v0.4.0 (2026-02-26)
+
+### Documentation
+
+- Add test plan for match-ux-listing-types
+  ([`41712c2`](https://github.com/djontology/ourcode-plugin/commit/41712c2eb0fbd4c0fc3f90dc4e675019bf6af7a5))
+
+- Fix stale set-contact example in ourcode-account workflow guide
+  ([`040bc9f`](https://github.com/djontology/ourcode-plugin/commit/040bc9f09669ae95de4ccbb8e22795b3faa15ba3))
+
+- Update CLAUDE.md with structured contact info and listing type contracts
+  ([`538d4ef`](https://github.com/djontology/ourcode-plugin/commit/538d4ef67b100765dbce93197cdfdad629ba61ce))
+
+- Update ourcode-account skill for listing types and structured contact info
+  ([`b68caf8`](https://github.com/djontology/ourcode-plugin/commit/b68caf853a6c503f342005161145991c333a1ac0))
+
+- Update ourcode-submit skill for listing types and structured contact info
+  ([`5654ab8`](https://github.com/djontology/ourcode-plugin/commit/5654ab8da24d4e4c07d55a7b125fe45cafdebfc8))
+
+### Features
+
+- Add add-contact and remove-contact CLI commands
+  ([`f91b7db`](https://github.com/djontology/ourcode-plugin/commit/f91b7dbd8db7d9a645256589dc9f7392f44d10b6))
+
+- Add background update check to CLI
+  ([`b706c45`](https://github.com/djontology/ourcode-plugin/commit/b706c4561c549a52cf5081d3faf4ead0d7cf6dda))
+
+- Auto-detect project ID in matches commands
+  ([`5ccee0c`](https://github.com/djontology/ourcode-plugin/commit/5ccee0cdeb5d6756fbefa0a19978113117e41c8b))
+
+- **cli**: Render structured contact info in introduction flows
+  ([`c61dd1e`](https://github.com/djontology/ourcode-plugin/commit/c61dd1ed46f44493838d283cde897c65ba9411c7))
+
+- **cli**: Show listing type badges in project submit results
+  ([`8d7147b`](https://github.com/djontology/ourcode-plugin/commit/8d7147b015e8377d87498bc540fcfd6c1ec9edea))
+
+- **cli**: Structured contact info input with typed methods
+  ([`062b403`](https://github.com/djontology/ourcode-plugin/commit/062b4034752b712884a8d8964a9951eb8d8bb927))
+
+### Testing
+
+- Add missing test coverage for AC3.3, AC3.5, AC6.1
+  ([`4ce918a`](https://github.com/djontology/ourcode-plugin/commit/4ce918a6d8e19fb3659d94a26cf5244f3ecd2fd2))
+
+
 ## v0.3.0 (2026-02-24)
 
 ### Documentation
