@@ -213,6 +213,133 @@ def test_profile_set_contact_preferred_not_found(_patch_get_client):
     assert "not found" in result.output
 
 
+def test_profile_add_contact_to_existing(_patch_get_client):
+    """add-contact appends a new method to existing contact info."""
+    client = _patch_get_client
+    # GET returns existing contact info; POST returns updated
+    get_resp = MagicMock()
+    get_resp.json.return_value = {"contact_info": {
+        "methods": [{"type": "email", "value": "me@example.com", "preferred": True}]
+    }}
+    post_resp = MagicMock()
+    post_resp.json.return_value = {"contact_info": {
+        "methods": [
+            {"type": "email", "value": "me@example.com", "preferred": True},
+            {"type": "linkedin", "value": "testerson", "preferred": False},
+        ]
+    }}
+    client.get.return_value = get_resp
+    client.post.return_value = post_resp
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["add-contact", "linkedin:testerson"])
+
+    assert result.exit_code == 0
+    assert "linkedin: testerson" in result.output
+    assert "email: me@example.com (preferred)" in result.output
+
+
+def test_profile_add_contact_replaces_same_type(_patch_get_client):
+    """add-contact replaces the value if the type already exists."""
+    client = _patch_get_client
+    get_resp = MagicMock()
+    get_resp.json.return_value = {"contact_info": {
+        "methods": [{"type": "email", "value": "old@example.com", "preferred": True}]
+    }}
+    post_resp = MagicMock()
+    post_resp.json.return_value = {"contact_info": {
+        "methods": [{"type": "email", "value": "new@example.com", "preferred": True}]
+    }}
+    client.get.return_value = get_resp
+    client.post.return_value = post_resp
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["add-contact", "email:new@example.com"])
+
+    assert result.exit_code == 0
+    # Verify the POST payload replaced the value
+    call_args = client.post.call_args
+    methods = call_args[1]["json"]["contact_info"]["methods"]
+    assert methods[0]["value"] == "new@example.com"
+
+
+def test_profile_add_contact_when_none_exists(_patch_get_client):
+    """add-contact creates contact info if none set, marking it preferred."""
+    client = _patch_get_client
+    import httpx
+    get_resp = MagicMock()
+    get_resp.status_code = 404
+    error = httpx.HTTPStatusError("not found", request=MagicMock(), response=get_resp)
+    client.get.side_effect = error
+    post_resp = MagicMock()
+    post_resp.json.return_value = {"contact_info": {
+        "methods": [{"type": "email", "value": "me@example.com", "preferred": True}]
+    }}
+    client.post.return_value = post_resp
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["add-contact", "email:me@example.com"])
+
+    assert result.exit_code == 0
+    assert "Contact info created:" in result.output
+
+
+def test_profile_remove_contact(_patch_get_client):
+    """remove-contact removes a method by type."""
+    client = _patch_get_client
+    get_resp = MagicMock()
+    get_resp.json.return_value = {"contact_info": {
+        "methods": [
+            {"type": "email", "value": "me@example.com", "preferred": True},
+            {"type": "linkedin", "value": "testerson", "preferred": False},
+        ]
+    }}
+    post_resp = MagicMock()
+    post_resp.json.return_value = {"contact_info": {
+        "methods": [{"type": "email", "value": "me@example.com", "preferred": True}]
+    }}
+    client.get.return_value = get_resp
+    client.post.return_value = post_resp
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["remove-contact", "linkedin"])
+
+    assert result.exit_code == 0
+    assert "Removed linkedin" in result.output
+
+
+def test_profile_remove_contact_not_found(_patch_get_client):
+    """remove-contact errors when the type doesn't exist."""
+    client = _patch_get_client
+    get_resp = MagicMock()
+    get_resp.json.return_value = {"contact_info": {
+        "methods": [{"type": "email", "value": "me@example.com", "preferred": True}]
+    }}
+    client.get.return_value = get_resp
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["remove-contact", "linkedin"])
+
+    assert result.exit_code == 1
+    assert "linkedin" in result.output.lower()
+
+
+def test_profile_remove_contact_last_method_blocked(_patch_get_client):
+    """remove-contact refuses to remove the last method."""
+    client = _patch_get_client
+    get_resp = MagicMock()
+    get_resp.json.return_value = {"contact_info": {
+        "methods": [{"type": "email", "value": "me@example.com", "preferred": True}]
+    }}
+    client.get.return_value = get_resp
+
+    with patch("cli.profile.get_client", return_value=client):
+        result = runner.invoke(profile_app, ["remove-contact", "email"])
+
+    assert result.exit_code == 1
+    assert "last contact method" in result.output.lower()
+
+
 def test_profile_delete_confirmed(_patch_get_client):
     client = _patch_get_client
     _set_response(client, {})
