@@ -1,5 +1,7 @@
 """OurCode CLI — authentication, account management, matches, and introductions."""
 
+import os
+
 import typer
 
 from cli import auth, intros, matches, profile, projects
@@ -10,6 +12,20 @@ app.add_typer(profile.app, name="profile")
 app.add_typer(projects.app, name="projects")
 app.add_typer(matches.app, name="matches")
 app.add_typer(intros.app, name="intros")
+
+
+@app.callback()
+def _callback(
+    no_update_check: bool = typer.Option(
+        False, "--no-update-check", help="Skip checking for CLI updates"
+    ),
+) -> None:
+    if no_update_check:
+        os.environ["OURCODE_NO_UPDATE_CHECK"] = "1"
+
+    from cli.update_check import start_background_check
+
+    start_background_check()
 
 
 def main():
