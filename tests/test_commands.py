@@ -391,7 +391,7 @@ def test_projects_submit_with_matches(_patch_get_client, tmp_path):
     client = _patch_get_client
     _set_response(client, {
         "id": "proj-new-123",
-        "lifecycle_stage": "mvp",
+        "lifecycle_stage": "community",
         "is_registered": True,
         "expires_at": None,
         "created_at": "2025-02-01T00:00:00Z",
@@ -400,7 +400,7 @@ def test_projects_submit_with_matches(_patch_get_client, tmp_path):
                 "project_id": "match-proj-1",
                 "tier": "exact",
                 "similarity": 0.94,
-                "lifecycle_stage": "mvp",
+                "lifecycle_stage": "community",
                 "summary": {
                     "project": {"goals": ["Build a matching service"]},
                     "tech_stack": {"languages": ["Python"], "frameworks": ["FastAPI"]},
@@ -410,7 +410,7 @@ def test_projects_submit_with_matches(_patch_get_client, tmp_path):
                 "project_id": "match-proj-2",
                 "tier": "partial",
                 "similarity": 0.81,
-                "lifecycle_stage": "prototype",
+                "lifecycle_stage": "dogfood",
                 "summary": {
                     "project": {"goals": ["Create discovery platform"]},
                     "tech_stack": {"languages": ["TypeScript"], "frameworks": ["Next.js"]},
@@ -441,7 +441,7 @@ def test_projects_submit_with_scraped_matches(_patch_get_client, tmp_path):
     client = _patch_get_client
     _set_response(client, {
         "id": "proj-new-789",
-        "lifecycle_stage": "mvp",
+        "lifecycle_stage": "community",
         "is_registered": True,
         "expires_at": None,
         "created_at": "2025-02-01T00:00:00Z",
@@ -450,7 +450,7 @@ def test_projects_submit_with_scraped_matches(_patch_get_client, tmp_path):
                 "project_id": "match-proj-1",
                 "tier": "exact",
                 "similarity": 0.94,
-                "lifecycle_stage": "mvp",
+                "lifecycle_stage": "community",
                 "listing_type": "scraped",
                 "display_name": "Open Source API Framework",
                 "repo_url": "https://github.com/example/api-framework",
@@ -463,7 +463,7 @@ def test_projects_submit_with_scraped_matches(_patch_get_client, tmp_path):
                 "project_id": "match-proj-2",
                 "tier": "partial",
                 "similarity": 0.81,
-                "lifecycle_stage": "prototype",
+                "lifecycle_stage": "dogfood",
                 "listing_type": "private",
                 "display_name": None,
                 "repo_url": None,
@@ -496,7 +496,7 @@ def test_projects_submit_no_matches(_patch_get_client, tmp_path):
     client = _patch_get_client
     _set_response(client, {
         "id": "proj-new-456",
-        "lifecycle_stage": "prototype",
+        "lifecycle_stage": "dogfood",
         "is_registered": False,
         "expires_at": "2025-02-02T00:00:00Z",
         "created_at": "2025-02-01T00:00:00Z",
@@ -665,7 +665,7 @@ def test_matches_show_scraped_with_repo_metadata(_patch_get_client):
                     "your_architecture": "microservices",
                     "their_architecture": "monolith",
                     "architecture_match": False,
-                    "your_lifecycle_stage": "mvp",
+                    "your_lifecycle_stage": "community",
                     "their_lifecycle_stage": "active",
                     "shared_goals": ["api"],
                     "unique_to_yours": [],
@@ -721,7 +721,7 @@ def test_match_show_private_no_repo_metadata(_patch_get_client):
                 "similarity": 0.70,
                 "listing_type": "private",
                 "other_project": {
-                    "lifecycle_stage": "prototype",
+                    "lifecycle_stage": "dogfood",
                     "display_name": None,
                     "repo_url": None,
                     "repo_metadata": None,
@@ -731,7 +731,7 @@ def test_match_show_private_no_repo_metadata(_patch_get_client):
                     "their_architecture": "monolith",
                     "architecture_match": True,
                     "your_lifecycle_stage": "active",
-                    "their_lifecycle_stage": "prototype",
+                    "their_lifecycle_stage": "dogfood",
                     "shared_goals": [],
                     "unique_to_yours": [],
                     "unique_to_theirs": [],
@@ -765,7 +765,7 @@ def test_matches_show_auto_detects_single_project(_patch_get_client):
     client = _patch_get_client
     # First call: /projects returns one project; second call: /projects/{id}/matches
     projects_resp = MagicMock()
-    projects_resp.json.return_value = {"projects": [{"id": "auto-proj", "lifecycle_stage": "mvp"}]}
+    projects_resp.json.return_value = {"projects": [{"id": "auto-proj", "lifecycle_stage": "community"}]}
     matches_resp = MagicMock()
     matches_resp.json.return_value = {"matches": []}
     client.get.side_effect = [projects_resp, matches_resp]
@@ -782,8 +782,8 @@ def test_matches_show_errors_with_multiple_projects(_patch_get_client):
     client = _patch_get_client
     resp = MagicMock()
     resp.json.return_value = {"projects": [
-        {"id": "proj-a", "lifecycle_stage": "mvp"},
-        {"id": "proj-b", "lifecycle_stage": "prototype"},
+        {"id": "proj-a", "lifecycle_stage": "community"},
+        {"id": "proj-b", "lifecycle_stage": "dogfood"},
     ]}
     client.get.return_value = resp
 
@@ -813,7 +813,7 @@ def test_matches_list_auto_detects_single_project(_patch_get_client):
     """matches list without project_id arg auto-detects when user has one project."""
     client = _patch_get_client
     projects_resp = MagicMock()
-    projects_resp.json.return_value = {"projects": [{"id": "auto-proj", "lifecycle_stage": "mvp"}]}
+    projects_resp.json.return_value = {"projects": [{"id": "auto-proj", "lifecycle_stage": "community"}]}
     matches_resp = MagicMock()
     matches_resp.json.return_value = {"matches": []}
     client.get.side_effect = [projects_resp, matches_resp]

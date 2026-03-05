@@ -25,7 +25,7 @@ Return ONLY a JSON object matching this schema, no explanation:
     "domain_tags": ["string — categorization keyword (2-5 items)"],
     "ux_patterns": ["string — e.g. crud-dashboard, cli-tool, visual-canvas (1+ items)"],
     "architecture": "monolith | microservices | cli-tool | library | web-app | mobile-app | api-service",
-    "lifecycle_stage": "brainstorm | prototype | mvp | ga"
+    "lifecycle_stage": "building | dogfood | community | product"
   },
   "tech_stack": {
     "languages": ["string (at least 1)"],
@@ -65,7 +65,7 @@ After reading README and manifests, skim key source files to verify goals and di
 Use code evidence to:
 - **Verify goals** — are README claims actually implemented, or just aspirational?
 - **Derive user stories** — format as "As a [persona], I [action/need]". Ground in what the code supports, not just what the README says.
-- **Assess lifecycle stage** more accurately — are features actually implemented (mvp/ga) or just stubbed out (prototype)?
+- **Assess lifecycle stage** more accurately — does this work for just the author (dogfood), other devs (community), or non-dev users (product)?
 
 ### 4. Infer architecture and UX patterns from directory structure
 
@@ -96,10 +96,11 @@ Check for:
 
 ### 6. Assess lifecycle stage
 
-- **brainstorm** — mostly docs, no working code
-- **prototype** — working code, minimal tests, no CI
-- **mvp** — tests exist, CI exists, core features work
-- **ga** — production-ready, comprehensive tests, monitoring
+Lifecycle stages reflect audience progression, not just code maturity:
+- **building** — Actively developing, not usable end-to-end. Incomplete features, stub code, TODOs outnumber implementations, no real entrypoint, README says "WIP"
+- **dogfood** — Works for the author, solves their problem. Functional entrypoint, rough edges OK, few/no tests, single contributor
+- **community** — Other devs/technical users can use it. README with setup instructions, CI, published/deployable, issue tracker, CONTRIBUTING.md
+- **product** — Has non-dev users or designed for them. Auth for end-users, billing/payments, analytics, i18n, docs site, landing/marketing pages, terms/privacy
 
 ### 7. Return JSON
 

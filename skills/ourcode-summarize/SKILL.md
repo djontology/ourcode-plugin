@@ -23,7 +23,7 @@ The summary must conform to this schema:
     "domain_tags": ["string — categorization keyword"],
     "ux_patterns": ["string — e.g. crud-dashboard, cli-tool, visual-canvas"],
     "architecture": "monolith | microservices | cli-tool | library | web-app | mobile-app | api-service",
-    "lifecycle_stage": "brainstorm | prototype | mvp | ga"
+    "lifecycle_stage": "building | dogfood | community | product"
   },
   "tech_stack": {
     "languages": ["string"],
