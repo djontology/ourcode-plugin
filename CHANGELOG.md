@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.5.0 (2026-03-05)
+
+### Features
+
+- Update lifecycle stages to audience-progression model
+  ([`a4ca7d0`](https://github.com/djontology/ourcode-plugin/commit/a4ca7d0e5b85957ad093f591d4158f48aff663da))
+
+
 ## v0.4.0 (2026-02-26)
 
 ### Documentation
