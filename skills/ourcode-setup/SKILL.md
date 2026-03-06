@@ -151,7 +151,7 @@ If the match includes a `comparison` field, show:
 
 After displaying matches, offer:
 
-1. **Web dashboard:** "Visit https://our-code-production.up.railway.app to browse matches, compare projects, and manage introductions"
+1. **Web dashboard:** "Visit https://ourcode.app to browse matches, compare projects, and manage introductions"
 2. **Set contact info:** `ourcode profile set-contact -m email:you@example.com -p email`
 3. **Request introduction:** `ourcode matches connect <match-id> <your-project-id>`
 4. **View matches later:** `ourcode matches list <project-id>`

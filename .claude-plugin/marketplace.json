@@ -18,7 +18,7 @@
         "name": "OurCode",
         "url": "https://github.com/djontology/ourcode-plugin"
       },
-      "homepage": "https://our-code-production.up.railway.app",
+      "homepage": "https://ourcode.app",
       "repository": "https://github.com/djontology/ourcode-plugin",
       "license": "MIT",
       "keywords": ["developer-matching", "collaboration", "project-summary"]

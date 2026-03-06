@@ -135,7 +135,7 @@ No similar projects found yet. As more developers submit projects, matches will 
 After displaying results, mention:
 
 "Your matches have been saved. You can revisit them anytime:
-- **Web dashboard**: https://our-code-production.up.railway.app
+- **Web dashboard**: https://ourcode.app
 - **CLI**: `ourcode matches list <project-id>`
 
 Want to connect with a match? First set your contact info:

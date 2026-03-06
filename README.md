@@ -71,7 +71,7 @@ ourcode intros decline <id>       # Decline an introduction
 
 ## Dashboard
 
-View your matches and manage introductions at [our-code-production.up.railway.app](https://our-code-production.up.railway.app).
+View your matches and manage introductions at [ourcode.app](https://ourcode.app).
 
 ## License
 

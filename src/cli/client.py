@@ -41,7 +41,7 @@ class APIClient:
         config = load_config()
         self.token = token or config.get("OURCODE_API_TOKEN", "")
         raw_url = (
-            base_url or config.get("OURCODE_API_URL", "https://our-code-production.up.railway.app")
+            base_url or config.get("OURCODE_API_URL", "https://ourcode.app")
         ).rstrip("/")
         self.base_url = f"{raw_url}/api"
 

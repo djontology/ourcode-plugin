@@ -17,7 +17,7 @@ dependencies = [
 ourcode = "cli.main:main"
 
 [project.urls]
-Homepage = "https://our-code-production.up.railway.app"
+Homepage = "https://ourcode.app"
 Repository = "https://github.com/djontology/ourcode-plugin"
 
 [tool.uv.build-backend]

@@ -105,7 +105,7 @@ ourcode intros decline <introduction-id>
 2. Run `ourcode intros accept <id>` to accept (reveals both parties' contact info)
 3. Run `ourcode intros decline <id>` to decline
 
-**Web alternative:** You can also do all of this from the [dashboard](https://our-code-production.up.railway.app) — browse matches, compare projects, and manage introductions with a visual interface.
+**Web alternative:** You can also do all of this from the [dashboard](https://ourcode.app) — browse matches, compare projects, and manage introductions with a visual interface.
 
 ## Error Handling
 
