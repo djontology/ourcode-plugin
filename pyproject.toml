@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "ourcode"
-version = "0.5.0"
+version = "0.6.0"
 description = "CLI for OurCode — find developers working on similar projects"
 requires-python = ">=3.11"
 license = "MIT"

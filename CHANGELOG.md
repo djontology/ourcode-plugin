@@ -2,6 +2,18 @@
 
 <!-- version list -->
 
+## v0.6.0 (2026-03-06)
+
+### Features
+
+- Remove login skill, update skills for new lifecycle stages
+  ([`200d32a`](https://github.com/djontology/ourcode-plugin/commit/200d32aa4590c101cae8894d9beaf400da945f95))
+
+### Breaking Changes
+
+- /ourcode-login slash command removed.
+
+
 ## v0.5.0 (2026-03-05)
 
 ### Features
