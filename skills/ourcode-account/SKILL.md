@@ -14,9 +14,9 @@ Manage your OurCode account using the `ourcode` CLI. View your profile, set cont
 - Must be authenticated (run `ourcode auth login` first)
 - The `ourcode` CLI must be installed. Install with:
   ```bash
-  pipx install git+https://github.com/djontology/ourcode-plugin.git
+  pipx install ourcode
   # or
-  uv tool install git+https://github.com/djontology/ourcode-plugin.git
+  uv tool install ourcode
   ```
 
 ## Available Commands

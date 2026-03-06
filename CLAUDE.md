@@ -39,11 +39,11 @@ src/cli/                      # Typer CLI (`ourcode` console script)
 
 ## Publishing & Versioning
 
-Releases are fully automated via [python-semantic-release](https://github.com/python-semantic-release/python-semantic-release) (v10). On every push to `main`, it analyzes commits and, if warranted, bumps the version in `pyproject.toml`, creates a git tag, builds with `uv build`, and creates a GitHub release. A separate publish job uploads to TestPyPI via `pypa/gh-action-pypi-publish`.
+Releases are fully automated via [python-semantic-release](https://github.com/python-semantic-release/python-semantic-release) (v10). On every push to `main`, it analyzes commits and, if warranted, bumps the version in `pyproject.toml`, creates a git tag, builds with `uv build`, and creates a GitHub release. A separate publish job uploads to PyPI via `pypa/gh-action-pypi-publish`.
 
 **Never manually edit the version in `pyproject.toml` or create version tags.** The tool manages both atomically.
 
-Currently publishing to **TestPyPI**. To switch to prod PyPI: remove `repository-url` from the publish step in `release.yml` and change the secret from `TEST_PYPI_TOKEN` to `PYPI_TOKEN`.
+Publishing to **PyPI**. Install with `pip install ourcode` or `uv tool install ourcode`.
 
 **If `uv.lock` is added later**, update `build_command` in `pyproject.toml` to:
 ```toml

@@ -26,12 +26,12 @@ which uv || which uvx || which pipx
 
 - **If `uv` or `uvx` is available:**
   ```bash
-  uv tool install git+https://github.com/djontology/ourcode-plugin.git
+  uv tool install ourcode
   ```
 
 - **If `pipx` is available:**
   ```bash
-  pipx install git+https://github.com/djontology/ourcode-plugin.git
+  pipx install ourcode
   ```
 
 - **If none are available:** Walk the user through installing `uv` first:
@@ -50,7 +50,7 @@ which uv || which uvx || which pipx
 
   After installing `uv`, restart the shell (or `source ~/.bashrc` / `source ~/.zshrc`), then install the CLI:
   ```bash
-  uv tool install git+https://github.com/djontology/ourcode-plugin.git
+  uv tool install ourcode
   ```
 
 Verify the install succeeded:

@@ -38,13 +38,13 @@ This walks you through:
 ## CLI Install
 
 ```bash
-pipx install git+https://github.com/djontology/ourcode-plugin.git
+pipx install ourcode
 ```
 
 Or with uv:
 
 ```bash
-uv tool install git+https://github.com/djontology/ourcode-plugin.git
+uv tool install ourcode
 ```
 
 The CLI reads its config from `~/.ourcode/config` (created automatically when you log in via the plugin).
