@@ -11,9 +11,8 @@ Claude Code plugin that provides five skills for interacting with the OurCode AP
 
 ```
 .claude-plugin/plugin.json   # Plugin manifest (name: "ourcode")
-commands/                     # Slash command definitions (ourcode-login, ourcode-submit, ourcode-summarize, ourcode-setup)
+commands/                     # Slash command definitions (ourcode-submit, ourcode-summarize, ourcode-setup)
 skills/                       # Skill implementations
-  ourcode-login/SKILL.md      # GitHub OAuth login (delegates to `ourcode auth login`)
   ourcode-summarize/SKILL.md  # Analyze codebase and produce ProjectSummaryCreate JSON
   ourcode-submit/SKILL.md     # Submit summary to POST /api/projects, display match comparison
   ourcode-account/SKILL.md    # Account management via ourcode CLI (matches show, /api/ paths)

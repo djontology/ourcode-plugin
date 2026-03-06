@@ -47,7 +47,7 @@ class APIClient:
 
         if not self.token:
             raise ValueError(
-                "no API token found. Run the ourcode-login skill first to authenticate."
+                "no API token found. Run `ourcode auth login` to authenticate."
             )
 
         # Note: httpx.Client is not explicitly closed. This is intentional because the APIClient

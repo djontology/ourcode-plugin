@@ -11,7 +11,7 @@ Manage your OurCode account using the `ourcode` CLI. View your profile, set cont
 
 ## Prerequisites
 
-- Must be authenticated (run `/ourcode-login` first)
+- Must be authenticated (run `ourcode auth login` first)
 - The `ourcode` CLI must be installed. Install with:
   ```bash
   pipx install git+https://github.com/djontology/ourcode-plugin.git
@@ -109,7 +109,7 @@ ourcode intros decline <introduction-id>
 
 ## Error Handling
 
-- **"no API token found"**: Run `/ourcode-login` first
+- **"no API token found"**: Run `ourcode auth login` first
 - **"must set contact_info"**: Run `ourcode profile set-contact` with contact methods first
 - **"target project has introductions blocked"**: That project owner has disabled introductions. If it's a scraped open-source repo, visit the repo URL directly instead.
 - **"active introduction already exists"**: You already have a pending or accepted introduction for this match

@@ -11,7 +11,7 @@ Submit the project summary to the OurCode server for matching. Reads the API tok
 
 ## Prerequisites
 
-- Must be authenticated (run `/ourcode-login` first)
+- Must be authenticated (run `ourcode auth login` first)
 - Must have a summary generated (run `/ourcode-summarize` first)
 
 ## Steps
@@ -22,7 +22,7 @@ Submit the project summary to the OurCode server for matching. Reads the API tok
 ourcode auth status
 ```
 
-If exit code 1: "You need to authenticate first. Run `/ourcode-login`."
+If exit code 1: "You need to authenticate first. Run `ourcode auth login`."
 
 ### Step 2: Read the project summary
 
@@ -75,22 +75,22 @@ Then check the `matches` array in the response.
 Found **3 similar projects**:
 
 **Exact matches** (very similar goals and tech):
-  - 94% similar (mvp)
+  - 94% similar (community)
     Goals: Build a developer matching service
     Tech: Python, FastAPI, pgvector
-  - 92% similar (mvp-v2)
+  - 92% similar (community)
     [SCRAPED] Firebase Realtime DB Matching Service
     Repo: https://github.com/example/firebase-matcher
-  - 88% similar (prototype)
+  - 88% similar (dogfood)
     [PUBLIC] Developer Network Platform
 
 **Partial matches** (overlapping goals, different approach):
-  - 82% similar (prototype)
+  - 82% similar (dogfood)
     Goals: Create a developer discovery platform
     Tech: TypeScript, Next.js, Pinecone
 
 **Related projects** (same domain, adjacent goals):
-  - 68% similar (ga)
+  - 68% similar (product)
     Goals: Open source contributor matching
     Tech: Go, PostgreSQL"
 

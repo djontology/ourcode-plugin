@@ -31,7 +31,6 @@ This walks you through:
 | Command | Description |
 |---------|-------------|
 | `/ourcode-setup` | First-run flow (login + summarize + submit) |
-| `/ourcode-login` | Authenticate with GitHub |
 | `/ourcode-summarize` | Generate a project summary |
 | `/ourcode-submit` | Submit your summary and view matches |
 | `/ourcode-account` | Manage profile, matches, and introductions |

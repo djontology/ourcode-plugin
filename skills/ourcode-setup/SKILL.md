@@ -88,7 +88,7 @@ If the subagent cannot determine enough information (no README, no package manif
 1. Ask the user for project goals (what does this project do?)
 2. Ask for tech stack (languages, frameworks, libraries)
 3. Ask for domain tags
-4. Ask for lifecycle stage (brainstorm, prototype, mvp, ga)
+4. Ask for lifecycle stage (building, dogfood, community, product)
 5. Ask for architecture style
 
 Construct the ProjectSummaryCreate JSON from the answers.
@@ -152,8 +152,8 @@ If the match includes a `comparison` field, show:
 After displaying matches, offer:
 
 1. **Web dashboard:** "Visit https://our-code-production.up.railway.app to browse matches, compare projects, and manage introductions"
-2. **Set contact info:** `ourcode profile set-contact <your-email>`
-3. **Request introduction:** `ourcode matches connect <match-id> <project-id>`
+2. **Set contact info:** `ourcode profile set-contact -m email:you@example.com -p email`
+3. **Request introduction:** `ourcode matches connect <match-id> <your-project-id>`
 4. **View matches later:** `ourcode matches list <project-id>`
 5. **Account management:** "Run `/ourcode-account` for full account management"
 
