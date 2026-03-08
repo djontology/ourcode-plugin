@@ -2,6 +2,22 @@
 
 <!-- version list -->
 
+## v0.7.0 (2026-03-08)
+
+### Chores
+
+- Publish to PyPI instead of TestPyPI, update install instructions
+  ([`a18fade`](https://github.com/djontology/ourcode-plugin/commit/a18fade3fd4624250f4e584cc4cdc53b6ead00f0))
+
+- Update URLs to ourcode.app, clean up stale skill references
+  ([`96e3ee1`](https://github.com/djontology/ourcode-plugin/commit/96e3ee1570fcffeff31cd97135d337c6ca34bcee))
+
+### Features
+
+- Add display_name to summary schema and skill prompts
+  ([`06ae190`](https://github.com/djontology/ourcode-plugin/commit/06ae1903e0b331df6537038cbfa8c75754a535b5))
+
+
 ## v0.6.0 (2026-03-06)
 
 ### Features
