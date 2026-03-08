@@ -18,6 +18,7 @@ Return ONLY a JSON object matching this schema, no explanation:
 ```json
 {
   "schema_version": "2.0",
+  "display_name": "string — short project name, 1-100 chars",
   "project": {
     "goals": ["string — freeform goal description (1-3 items)"],
     "non_goals": ["string — what this project explicitly does NOT do (0+ items)"],
@@ -102,7 +103,11 @@ Lifecycle stages reflect audience progression, not just code maturity:
 - **community** — Other devs/technical users can use it. README with setup instructions, CI, published/deployable, issue tracker, CONTRIBUTING.md
 - **product** — Has non-dev users or designed for them. Auth for end-users, billing/payments, analytics, i18n, docs site, landing/marketing pages, terms/privacy
 
-### 7. Return JSON
+### 7. Choose a display name
+
+Pick a concise display name for the project (1-100 characters). Use the project's name from README headings, package.json `name`, pyproject.toml `[project] name`, or the repo directory name. Format it as a human-readable title (e.g. "OurCode", "FastAPI Starter", "My CLI Tool"). If nothing clear exists, use the directory name in title case.
+
+### 8. Return JSON
 
 Produce the `ProjectSummaryCreate` JSON object. Return ONLY the JSON, no surrounding explanation or markdown fences.
 
@@ -119,4 +124,5 @@ Produce the `ProjectSummaryCreate` JSON object. Return ONLY the JSON, no surroun
 - Read-only analysis. Do not modify any files.
 - Do not include source code content in the summary.
 - If insufficient information exists, make reasonable inferences and note uncertainty in goal descriptions.
+- `display_name` is required. Use the project's actual name (from README, package manifest, or directory name).
 - `goals` must have at least 1 item, `languages` must have at least 1 item, `user_stories` must have at least 1 item.

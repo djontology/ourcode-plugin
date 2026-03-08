@@ -99,6 +99,7 @@ Show the generated summary to the user in a readable format:
 
 ```
 Project Summary:
+  Name: [display_name]
   Goals: [list]
   User Stories: [list]
   Non-Goals: [list, or "None"]

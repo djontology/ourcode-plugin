@@ -30,7 +30,7 @@ Read `.ourcode/summary.json` from the project root.
 
 If the file doesn't exist: "No project summary found. Run `/ourcode-summarize` first."
 
-Parse the JSON and verify it has the required fields (`schema_version`, `project`, `tech_stack`).
+Parse the JSON and verify it has the required fields (`schema_version`, `display_name`, `project`, `tech_stack`).
 
 ### Step 3: Ask about registration
 

@@ -16,6 +16,7 @@ The summary must conform to this schema:
 ```json
 {
   "schema_version": "2.0",
+  "display_name": "string — short project name, 1-100 chars",
   "project": {
     "goals": ["string — freeform goal description"],
     "non_goals": ["string — what this project explicitly does NOT do"],
@@ -52,6 +53,7 @@ Display the summary in a readable format:
 
 ```
 Project Summary:
+  Name: [display_name]
   Goals: [list]
   User Stories: [list]
   Non-Goals: [list, or "None"]
