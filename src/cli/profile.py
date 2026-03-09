@@ -9,7 +9,7 @@ app = typer.Typer(help="Manage your developer profile")
 
 # Client-side validation only — server is the source of truth.
 # If the server adds new types, update this tuple to match.
-CONTACT_TYPES = ("email", "discord", "linkedin", "slack", "twitter", "github_discussion", "other")
+CONTACT_TYPES = ("email", "discord", "linkedin", "bluesky", "slack", "twitter", "github_discussion", "other")
 
 
 def _parse_method(entry: str) -> dict:
