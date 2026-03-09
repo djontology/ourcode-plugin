@@ -26,7 +26,8 @@ Return ONLY a JSON object matching this schema, no explanation:
     "domain_tags": ["string — categorization keyword (2-5 items)"],
     "ux_patterns": ["string — e.g. crud-dashboard, cli-tool, visual-canvas (1+ items)"],
     "architecture": "monolith | microservices | cli-tool | library | web-app | mobile-app | api-service",
-    "lifecycle_stage": "building | dogfood | community | product"
+    "lifecycle_stage": "building | dogfood | community | product",
+    "repo_url": "string | null — GitHub repository URL (auto-detected from git remote)"
   },
   "tech_stack": {
     "languages": ["string (at least 1)"],
@@ -43,7 +44,19 @@ Return ONLY a JSON object matching this schema, no explanation:
 
 Look for README.md (or README) to extract project goals, description, and any stated non-goals.
 
-### 2. Detect tech stack from package manifests
+### 2. Detect repository URL
+
+Run `git remote get-url origin` to check for a git remote. If found:
+- Normalize the URL to HTTPS format:
+  - SSH format (`git@github.com:owner/repo.git`) → `https://github.com/owner/repo`
+  - HTTPS with `.git` suffix (`https://github.com/owner/repo.git`) → `https://github.com/owner/repo`
+  - HTTPS without `.git` → use as-is
+- Set `repo_url` to the normalized URL
+- Only include `repo_url` for GitHub repositories (URLs containing `github.com`)
+
+If no git remote exists, or the remote is not a GitHub URL, omit `repo_url` from the output (set to `null`).
+
+### 3. Detect tech stack from package manifests
 
 Read whichever exist:
 - `package.json` (Node.js/JavaScript/TypeScript)
@@ -56,7 +69,7 @@ Read whichever exist:
 
 Extract languages, frameworks, and key libraries.
 
-### 3. Explore source code for goals and user stories
+### 4. Explore source code for goals and user stories
 
 After reading README and manifests, skim key source files to verify goals and discover user-facing features:
 - Read entrypoints (e.g. `main.py`, `index.ts`, `src/App.tsx`, `cmd/main.go`)
@@ -68,7 +81,7 @@ Use code evidence to:
 - **Derive user stories** — format as "As a [persona], I [action/need]". Ground in what the code supports, not just what the README says.
 - **Assess lifecycle stage** more accurately — does this work for just the author (dogfood), other devs (community), or non-dev users (product)?
 
-### 4. Infer architecture and UX patterns from directory structure
+### 5. Infer architecture and UX patterns from directory structure
 
 Use `ls` and Glob to examine the top-level layout:
 - `src/` with subdirectories — likely monolith or web-app
@@ -85,7 +98,7 @@ Infer UX patterns from tech stack and code structure:
 - Static site generator → "content-site"
 - Form-heavy CRUD app → "form-driven-app"
 
-### 5. Detect infrastructure
+### 6. Detect infrastructure
 
 Check for:
 - `Dockerfile`, `docker-compose.yml` — Docker
@@ -95,7 +108,7 @@ Check for:
 - `.github/workflows/` — GitHub Actions
 - `Procfile` — Heroku
 
-### 6. Assess lifecycle stage
+### 7. Assess lifecycle stage
 
 Lifecycle stages reflect audience progression, not just code maturity:
 - **building** — Actively developing, not usable end-to-end. Incomplete features, stub code, TODOs outnumber implementations, no real entrypoint, README says "WIP"
@@ -103,11 +116,11 @@ Lifecycle stages reflect audience progression, not just code maturity:
 - **community** — Other devs/technical users can use it. README with setup instructions, CI, published/deployable, issue tracker, CONTRIBUTING.md
 - **product** — Has non-dev users or designed for them. Auth for end-users, billing/payments, analytics, i18n, docs site, landing/marketing pages, terms/privacy
 
-### 7. Choose a display name
+### 8. Choose a display name
 
 Pick a concise display name for the project (1-100 characters). Use the project's name from README headings, package.json `name`, pyproject.toml `[project] name`, or the repo directory name. Format it as a human-readable title (e.g. "OurCode", "FastAPI Starter", "My CLI Tool"). If nothing clear exists, use the directory name in title case.
 
-### 8. Return JSON
+### 9. Return JSON
 
 Produce the `ProjectSummaryCreate` JSON object. Return ONLY the JSON, no surrounding explanation or markdown fences.
 
@@ -118,6 +131,7 @@ Produce the `ProjectSummaryCreate` JSON object. Return ONLY the JSON, no surroun
 - **user_stories**: At least 1 item. Format: "As a [persona], I [action/need]". Derive from README usage/feature sections AND code exploration. Ground in what the code actually supports.
 - **domain_tags**: 2-5 categorization keywords.
 - **ux_patterns**: At least 1 item. Infer from directory structure, tech stack, and code patterns.
+- **repo_url**: Auto-detected from git remote origin. Only include for GitHub repositories. Normalize to HTTPS format without `.git` suffix. Set to `null` if no GitHub remote found.
 
 ## Constraints
 
@@ -126,3 +140,4 @@ Produce the `ProjectSummaryCreate` JSON object. Return ONLY the JSON, no surroun
 - If insufficient information exists, make reasonable inferences and note uncertainty in goal descriptions.
 - `display_name` is required. Use the project's actual name (from README, package manifest, or directory name).
 - `goals` must have at least 1 item, `languages` must have at least 1 item, `user_stories` must have at least 1 item.
+- `repo_url` is optional. Only include it when a GitHub remote is detected. Non-GitHub remotes should be ignored.
