@@ -24,7 +24,8 @@ The summary must conform to this schema:
     "domain_tags": ["string — categorization keyword"],
     "ux_patterns": ["string — e.g. crud-dashboard, cli-tool, visual-canvas"],
     "architecture": "monolith | microservices | cli-tool | library | web-app | mobile-app | api-service",
-    "lifecycle_stage": "building | dogfood | community | product"
+    "lifecycle_stage": "building | dogfood | community | product",
+    "repo_url": "string | null — GitHub repository URL"
   },
   "tech_stack": {
     "languages": ["string"],
@@ -54,6 +55,7 @@ Display the summary in a readable format:
 ```
 Project Summary:
   Name: [display_name]
+  Repo: [repo_url, or "Not detected"]
   Goals: [list]
   User Stories: [list]
   Non-Goals: [list, or "None"]
