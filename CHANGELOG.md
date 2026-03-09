@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.8.0 (2026-03-09)
+
+### Features
+
+- Add bluesky to accepted contact types
+  ([`7a784e8`](https://github.com/djontology/ourcode-plugin/commit/7a784e8fa3861d5c830c82d353b701f0769ad7d5))
+
+
 ## v0.7.0 (2026-03-08)
 
 ### Chores
