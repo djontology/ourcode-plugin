@@ -2,6 +2,17 @@
 
 <!-- version list -->
 
+## v0.9.0 (2026-03-10)
+
+### Features
+
+- Add repo_url detection to codebase-summarizer agent
+  ([`9cd0d42`](https://github.com/djontology/ourcode-plugin/commit/9cd0d42cff71dd11351a94be4d90febccfe49645))
+
+- Show repo_url in summarize skill review output
+  ([`cc346b2`](https://github.com/djontology/ourcode-plugin/commit/cc346b23c501808835ec3a827f60a545bcd11e5c))
+
+
 ## v0.8.0 (2026-03-09)
 
 ### Features
